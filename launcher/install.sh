@@ -33,12 +33,23 @@ state=$(adb_ get-state 2>/dev/null || true)
 [[ $state == device ]] || { echo "error: no TV connected (adb connect <tv-ip>:5555; set ADB_SERIAL if several)" >&2; exit 1; }
 
 # Alarms normally fire no sooner than 5 s from now; the home switch needs them immediate.
+# A min_futurity someone set before is kept in dumbtv_min_futurity, and --undo puts it back.
 set_futurity() {
-  local cur
+  local cur old saved
   cur=$(sh_ settings get global alarm_manager_constants | tr -d '\r')
   [[ $cur == null ]] && cur=
+  old=$(printf '%s' "$cur" | tr ',' '\n' | sed -n 's/^min_futurity=//p' | head -1)
+  saved=$(sh_ settings get global dumbtv_min_futurity | tr -d '\r')
   cur=$(printf '%s' "$cur" | tr ',' '\n' | { grep -v '^min_futurity=' || true; } | paste -sd, -)
-  if [[ $1 == on ]]; then cur=${cur:+$cur,}min_futurity=0; fi
+  if [[ $1 == on ]]; then
+    if [[ -n $old && $old != 0 && ( -z $saved || $saved == null ) ]]; then
+      sh_ settings put global dumbtv_min_futurity "$old" >/dev/null
+    fi
+    cur=${cur:+$cur,}min_futurity=0
+  elif [[ -n $saved && $saved != null ]]; then
+    [[ $saved =~ ^[0-9]+$ ]] && cur=${cur:+$cur,}min_futurity=$saved
+    sh_ settings delete global dumbtv_min_futurity >/dev/null
+  fi
   if [[ -n $cur ]]; then sh_ settings put global alarm_manager_constants "$cur"
   else sh_ settings delete global alarm_manager_constants >/dev/null; fi
 }
@@ -60,15 +71,21 @@ set_guard() {
   [[ $cur == null ]] && cur=
   cur=$(printf '%s' "$cur" | tr ':' '\n' | { grep -vxF -e "$GUARD" -e "$PKG/.Guard" -e "$OLD_GUARD" -e '' || true; } | paste -sd: -)
   if [[ -n ${1:-} ]]; then cur=${cur:+$cur:}$1; fi
-  # Clearing first makes the accessibility manager rebind a service whose process died.
+  # Clearing first makes the accessibility manager rebind a service whose process died. The
+  # other services live only in $orig meanwhile: if this is cut short, the trap puts them back.
+  orig=$(sh_ settings get secure enabled_accessibility_services | tr -d '\r')
+  [[ $orig == null ]] && orig=
+  trap 'put_secure enabled_accessibility_services "$orig" || true' EXIT INT TERM
   put_secure enabled_accessibility_services ""
   sleep 1
   if [[ -n $cur ]]; then
     put_secure enabled_accessibility_services "$cur"
     put_secure accessibility_enabled 1
   else
+    put_secure enabled_accessibility_services ""
     put_secure accessibility_enabled 0
   fi
+  trap - EXIT INT TERM
 }
 
 sha256() {
@@ -82,6 +99,9 @@ if [[ $mode == undo ]]; then
   sh_ appops set $PKG GET_USAGE_STATS default >/dev/null 2>&1 || true
   set_futurity off
   set_guard ""
+  # What the install added besides: the Doze exemption and the preferred HOME activity.
+  sh_ dumpsys deviceidle whitelist -$PKG >/dev/null 2>&1 || true
+  sh_ cmd package clear-package-preferred-activities $PKG >/dev/null 2>&1 || true
   sh_ am start -a android.intent.action.MAIN -c android.intent.category.HOME >/dev/null 2>&1 || true
   echo "HOME handed back to Amazon's launcher (dumbtv home stays installed: adb uninstall $PKG)"
   exit 0
@@ -130,8 +150,13 @@ case $out in
   *Success*) ;;
   *INSTALL_FAILED_UPDATE_INCOMPATIBLE*)
     echo "error: the installed dumbtv home was signed with a different key (release vs your own build)." >&2
-    echo "  back up your settings:  adb pull /sdcard/Android/data/$PKG/files/home.conf" >&2
-    echo "  then remove it:         adb uninstall $PKG    and run this again" >&2
+    if [[ $mode == release ]]; then
+      echo "  it is probably your own build: run ./launcher/install.sh --build instead" >&2
+    else
+      echo "  it is probably the release: this build's key cannot update it." >&2
+    fi
+    echo "  Replacing it means uninstalling it (adb uninstall $PKG), which deletes its settings;" >&2
+    echo "  on Fire OS 8 they cannot be backed up over adb first." >&2
     exit 1 ;;
   *) echo "error: adb install failed: $(printf '%s' "$out" | tail -1)" >&2; exit 1 ;;
 esac
