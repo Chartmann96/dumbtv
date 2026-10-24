@@ -373,7 +373,11 @@ final class Config {
             if ("daytime".equals(mode)) {
                 int period = period();
                 List<File> fit = forPeriod(pool, period);
-                if (fit == null) return pool.get(period % pool.size());
+                if (fit == null) {
+                    // Keep Options › Next wallpaper working here too.
+                    int n = pool.size();
+                    return pool.get(((period + offset()) % n + n) % n);
+                }
                 if (!fit.isEmpty()) pool = fit;
                 mode = "visit";
             }

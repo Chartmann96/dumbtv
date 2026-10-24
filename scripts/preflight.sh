@@ -5,6 +5,7 @@ set -uo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 parse_flags "$@"
 need_device
+load_conf
 mkdir -p "$REPORT"
 
 step "device"
@@ -38,12 +39,18 @@ note "dns filter    $(present dnsfilter.android && echo installed || echo 'not i
 note "launcher      $(present tv.dumbtv.home && echo 'dumbtv home installed' || echo 'not installed')"
 
 step "the pass would"
-note "disable $(($(list_of "$(fos packages.txt)" | wc -l | tr -d ' ') - 0)) Amazon packages, minus anything in never-disable.txt"
-note "remove $(list_of "$(fos user-apps.txt)" | wc -l | tr -d ' ') third-party apps"
+note "disable $(cleanup_list | wc -l | tr -d ' ') Amazon packages, minus anything in never-disable.txt"
+# debloat.sh removes only the apps named in dumbtv.conf, never the whole user-apps.txt.
+if [[ -n $REMOVE_EXTRA ]]; then note "remove only the apps you named: $REMOVE_EXTRA"
+else note "remove none of your apps (none named in dumbtv.conf)"; fi
 note "deny background work + data to $(list_of "$(fos protected.txt)" | wc -l | tr -d ' ') protected packages"
 note "apply $(list_of "$(fos settings.txt)" | wc -l | tr -d ' ') privacy settings"
-note "install a DNS filter that blocks Amazon telemetry, Alexa and the OTA servers"
-note "replace the home screen with dumbtv home (this repo's own launcher, no internet access)"
+if [[ $DNSFILTER == 1 ]]; then
+  note "install a DNS filter that blocks Amazon telemetry$([[ $ALEXA == 0 ]] && printf ', Alexa') and the OTA servers"
+fi
+if [[ $LAUNCHER == 1 ]]; then
+  note "replace the home screen with dumbtv home (this repo's own launcher, no internet access)"
+fi
 note "reboot twice (about 5 minutes)"
 
 step "not touched, ever"

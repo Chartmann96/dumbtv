@@ -35,7 +35,8 @@ mkdir -p "$REPORT"
 restore_value() {
   local ns=$1 key=$2 fallback=$3 snapshot="$REPORT/settings-before-$1.txt" v
   if [[ -f $snapshot ]]; then
-    v=$(grep -m1 "^$key=" "$snapshot" 2>/dev/null | cut -d= -f2-)
+    # The snapshot is raw adb output: a CR left on the value would be written back with it.
+    v=$(tr -d '\r' < "$snapshot" | grep -m1 "^$key=" | cut -d= -f2-)
     [[ -n $v ]] && { printf '%s' "$v"; return; }
   fi
   printf '%s' "$fallback"
