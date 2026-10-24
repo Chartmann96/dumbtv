@@ -95,13 +95,18 @@ die()  { printf 'error: %s\n' "$*" >&2; exit 1; }
 dev()  { "$ADB" -s "$SERIAL" shell "$@" 2>&1 </dev/null; }
 dev1() { dev "$@" | head -1 | tr -d '\r'; }
 
-# A dropped connection must not look like "package absent".
+# A dropped connection must not look like "package absent". adb's exit status cannot tell
+# them apart (pm path exits 1 for a missing package too), so on any failure the connection
+# itself is asked; return 2 means the TV is gone. Callers check it in the main shell: a die
+# inside $(...) or a pipeline would only end that subshell.
 dev_ok() {
-  local out
-  out=$(dev "$@") || return 1
-  printf '%s\n' "$out" | grep -qiE "^error: (device|closed|no devices)|device '[^']*' not found" &&
-    die "device $SERIAL stopped responding — reconnect and re-run"
+  local out rc=0
+  out=$(dev "$@") || rc=$?
+  if [[ $rc != 0 ]] || printf '%s\n' "$out" | grep -qiE "^error: (device|closed|no devices)|device '[^']*' not found"; then
+    [[ $("$ADB" -s "$SERIAL" get-state 2>/dev/null) == device ]] || return 2
+  fi
   printf '%s\n' "$out"
+  return $rc
 }
 
 # Device command that honours --dry-run. The dry-run line goes to stderr so a
@@ -261,9 +266,19 @@ gateway() {
   printf '%s' "$gw"
 }
 uid_of()     { dev "dumpsys package $1" | sed -n 's/.*userId=\([0-9]*\).*/\1/p' | head -1; }
-present()    { dev_ok "pm path $1" | grep -q '^package:'; }
+present() {
+  local out rc=0
+  out=$(dev_ok "pm path $1") || rc=$?
+  [[ $rc == 2 ]] && die "device $SERIAL stopped responding — reconnect and re-run"
+  grep -q '^package:' <<<"$out"
+}
 # Shipped with the TV, as opposed to installed from a store.
-is_system()  { dev_ok "pm list packages -s" | tr -d '\r' | grep -qx "package:$1"; }
+is_system() {
+  local out rc=0
+  out=$(dev_ok "pm list packages -s") || rc=$?
+  [[ $rc == 2 ]] && die "device $SERIAL stopped responding — reconnect and re-run"
+  tr -d '\r' <<<"$out" | grep -qx "package:$1"
+}
 
 reboot_wait() {
   if [[ ${NO_REBOOT:-0} == 1 ]]; then
