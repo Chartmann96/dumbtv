@@ -166,7 +166,7 @@ adb reboot
 `com.amazon.firebat` is Prime Video on Fire OS 6, 7 and 8, despite the name. It is
 on `never-disable.txt` now; a TV debloated by an older version can get it back
 with `./scripts/restore.sh` or `adb shell pm enable --user 0 com.amazon.firebat`.
-Also check that `PRIME=1` in `dumbtv.conf`.
+Also check that `PRIME=1` is set in `dumbtv.conf`.
 
 ### A package I disabled is still running
 
