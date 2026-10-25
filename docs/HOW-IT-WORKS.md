@@ -107,8 +107,8 @@ only and reads no screen content.
 - Android holds back app launches for 5 s after HOME (`APP_SWITCH_DELAY_TIME`),
   which is why other launchers flash Amazon's home for seconds. `Guard` launches
   through an alarm `PendingIntent`, which `system_server` sends and which is exempt
-  from the delay. `launcher.sh` sets `min_futurity=0` so the alarm fires at once:
-  in `settings global alarm_manager_constants` up to Android 11, and in
+  from the delay. `launcher/install.sh` sets `min_futurity=0` so the alarm fires
+  at once: in `settings global alarm_manager_constants` up to Android 11, and in
   `device_config` namespace `alarm_manager` on Android 12 and later, which ignore
   the global setting.
 - A plain overlay covers Amazon's home before it draws and is removed once dumbtv

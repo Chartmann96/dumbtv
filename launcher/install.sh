@@ -37,53 +37,6 @@ state=$(adb_ get-state 2>/dev/null || true)
 dev_sdk=$(sh_ getprop ro.build.version.sdk | tr -d '\r')
 case $dev_sdk in ''|*[!0-9]*) dev_sdk=28 ;; esac
 
-# Alarms normally fire no sooner than 5 s from now; the home switch needs them immediate.
-# Android 11 and older read min_futurity from settings global alarm_manager_constants.
-# Android 12 and later ignore that setting and read DeviceConfig alarm_manager instead.
-# A min_futurity someone set before is kept in dumbtv_min_futurity, and --undo puts it back.
-constants_futurity() {
-  local cur
-  cur=$(sh_ settings get global alarm_manager_constants | tr -d '\r')
-  [[ $cur == null ]] && cur=
-  if [[ $1 == get ]]; then
-    printf '%s' "$cur" | tr ',' '\n' | sed -n 's/^min_futurity=//p' | head -1
-    return
-  fi
-  cur=$(printf '%s' "$cur" | tr ',' '\n' | { grep -v '^min_futurity=' || true; } | paste -sd, -)
-  if [[ -n ${2:-} ]]; then cur=${cur:+$cur,}min_futurity=$2; fi
-  if [[ -n $cur ]]; then sh_ settings put global alarm_manager_constants "$cur" >/dev/null
-  else sh_ settings delete global alarm_manager_constants >/dev/null; fi
-}
-
-config_futurity() {
-  local cur
-  case $1 in
-    get) cur=$(sh_ device_config get alarm_manager min_futurity | tr -d '\r' || true)
-         if [[ $cur != null ]]; then printf '%s' "$cur"; fi ;;
-    put) if [[ -n ${2:-} ]]; then sh_ device_config put alarm_manager min_futurity "$2" >/dev/null
-         else sh_ device_config delete alarm_manager min_futurity >/dev/null; fi ;;
-  esac
-}
-
-set_futurity() {
-  local store=constants_futurity old saved
-  if [[ $dev_sdk -ge 31 ]]; then store=config_futurity; fi
-  old=$($store get)
-  saved=$(sh_ settings get global dumbtv_min_futurity | tr -d '\r')
-  [[ $saved == null ]] && saved=
-  if [[ $1 == on ]]; then
-    if [[ -n $old && $old != 0 && -z $saved ]]; then
-      sh_ settings put global dumbtv_min_futurity "$old" >/dev/null
-    fi
-    $store put 0
-    return
-  fi
-  if [[ $saved =~ ^[0-9]+$ ]]; then $store put "$saved"; else $store put ""; fi
-  if [[ -n $saved ]]; then sh_ settings delete global dumbtv_min_futurity >/dev/null; fi
-  # Installs before this split wrote the Android 11 setting on newer TVs as well.
-  if [[ $store == config_futurity ]]; then constants_futurity put ""; fi
-}
-
 # Fire OS 6's `settings` command silently drops writes to enabled_accessibility_services
 # (exit code 0, value unchanged); the settings content provider still takes them.
 put_secure() {

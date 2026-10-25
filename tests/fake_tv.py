@@ -57,16 +57,24 @@ if words[:1] == ['settings']:
     elif verb == 'delete' and len(rest) == 2:
         settings.pop(f'{rest[0]}/{rest[1]}', None)
         save()
-elif words[:1] == ['device_config'] and len(words) >= 4:
-    key = f'config/{words[2]}/{words[3]}'
-    if words[1] == 'get':
+elif words[:1] == ['device_config']:
+    verb, rest = (words[1], words[2:]) if len(words) > 1 else ('', [])
+    key = '/'.join(['config'] + rest[:2])
+    if verb == 'get' and len(rest) == 2:
         print(settings.get(key, 'null'))
-    elif words[1] == 'put' and len(words) == 5:
-        settings[key] = words[4]
+    elif verb in ('put', 'delete') and len(rest) == (3 if verb == 'put' else 2):
+        if state.get('device_config_refused'):
+            print('Exception occurred while executing: Permission denial')
+            sys.exit(255)
+        if verb == 'put':
+            settings[key] = rest[2]
+        else:
+            settings.pop(key, None)
         save()
-    elif words[1] == 'delete':
-        settings.pop(key, None)
+    else:
+        state.setdefault('bad', []).append(command)
         save()
+        print('Bad arguments')
 elif command == 'echo ok':
     print('ok')
 elif command == 'cat /proc/sys/kernel/random/boot_id':

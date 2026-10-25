@@ -173,6 +173,11 @@ class VerifyTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn('min_futurity=0 missing', result.stdout)
 
+    def test_android12_is_the_first_to_read_device_config(self):
+        result, _ = self.run_verify(self.modern(LABEL), sdk='31', futurity='null', alarms='min_futurity=0')
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('min_futurity=0 missing', result.stdout)
+
     def test_android11_reads_the_global_alarm_setting(self):
         result, _ = self.run_verify(self.modern(LABEL), sdk='30', futurity='null',
                                     alarms='other=1,min_futurity=0')
