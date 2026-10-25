@@ -62,9 +62,8 @@ Same shell, same `pm disable-user`, different targets.
 - **Play Protect holds `adb install`.** The TV asks whether to install an app
   "built for an older version of Android" and the command waits until someone
   answers on the remote. Press Install anyway. dumbtv home targets sdk 28 on
-  purpose, so one APK runs on Fire OS 6 to 8. Raising the target to 30 would
-  hide the installed apps from the launcher under Android 11's package
-  visibility rules.
+  purpose: at 30, Android 11's package visibility rules would hide the
+  installed apps from it.
 - **Wait before rebooting.** On low-memory sets `pm disable-user` prints
   `disabled-user` but the state is saved later, and an `adb reboot` sent a few
   seconds after it brings the package back. Give it about 40 seconds (seen on a
