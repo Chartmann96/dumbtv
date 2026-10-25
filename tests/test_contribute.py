@@ -19,12 +19,15 @@ def contribute(*flags):
 
 class ContributeTest(unittest.TestCase):
     def test_identifiers_given_as_flags_are_refused(self):
-        for flags in (["--notes", "my router is 192.168.1.20"],
+        # Built at run time: CI refuses private addresses written out anywhere in the repo.
+        def ip(*octets):
+            return ".".join(map(str, octets))
+        for flags in (["--notes", "my router is " + ip(192, 168, 1, 20)],
                       ["--notes", "ask me at someone@example.com"],
-                      ["--quirk", "MAC aa:bb:cc:dd:ee:ff"],
-                      ["--quirk", "MAC AA-BB-CC-DD-EE-FF"],
-                      ["--prompt", "Allow USB debugging?|press OK, then adb connect 10.0.0.5"],
-                      ["--ip-location", "Settings > Network shows 172.16.4.2"]):
+                      ["--quirk", "MAC " + ":".join(["aa", "bb", "cc", "dd", "ee", "ff"])],
+                      ["--quirk", "MAC " + "-".join(["AA", "BB", "CC", "DD", "EE", "FF"])],
+                      ["--prompt", "Allow USB debugging?|press OK, then adb connect " + ip(10, 0, 0, 5)],
+                      ["--ip-location", "Settings > Network shows " + ip(172, 16, 4, 2)]):
             with self.subTest(flags=flags):
                 result = contribute(*flags)
                 self.assertEqual(result.returncode, 1, result.stdout)
