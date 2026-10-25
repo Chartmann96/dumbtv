@@ -5,8 +5,10 @@ import android.app.ActivityOptions;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.Looper;
@@ -31,6 +33,9 @@ import android.view.accessibility.AccessibilityEvent;
  * through system_server by an alarm ("Background activity start ... callingUidHasAnyVisibleWindow:
  * false"). The cover is such a window, so the launch waits until the cover has reached the
  * window manager: {@link #launchWhenCovered} fires it from the cover's first draw pass.
+ *
+ * Waking from standby resumes whatever was on screen without a new window event. If that was
+ * Amazon's launcher, or nothing is known yet (as after an update), our home is brought up at once.
  */
 public final class Guard extends AccessibilityService {
     static final String AMAZON = "com.amazon.tv.launcher";
@@ -47,6 +52,13 @@ public final class Guard extends AccessibilityService {
     private final Runnable launch = () -> home(this);
     private View cover;
     private long lastLaunch;
+    private String top;
+    private final BroadcastReceiver screenOn = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context c, Intent i) {
+            if (!paused && (top == null || AMAZON.equals(top))) launchWhenCovered();
+        }
+    };
 
     /** Lets Amazon's home stay on screen until the user leaves it. */
     static void pause() {
@@ -104,12 +116,17 @@ public final class Guard extends AccessibilityService {
         lp.windowAnimations = 0;
         ((WindowManager) getSystemService(WINDOW_SERVICE)).addView(view, lp);
         cover = view;
+        registerReceiver(screenOn, new IntentFilter(Intent.ACTION_SCREEN_ON));
     }
 
     @Override
     public void onDestroy() {
         handler.removeCallbacks(uncover);
         handler.removeCallbacks(launch);
+        try {
+            unregisterReceiver(screenOn);
+        } catch (IllegalArgumentException ignored) {
+        }
         if (cover != null) ((WindowManager) getSystemService(WINDOW_SERVICE)).removeView(cover);
         if (running == this) running = null;
         super.onDestroy();
@@ -122,10 +139,12 @@ public final class Guard extends AccessibilityService {
         if (pkg == null) return;
         if (!AMAZON.contentEquals(pkg)) {
             if ("com.android.systemui".contentEquals(pkg) || "android".contentEquals(pkg)) return;
+            top = pkg.toString();
             paused = false;
             if (!getPackageName().contentEquals(pkg)) arrived(this);
             return;
         }
+        top = AMAZON;
         if (paused || cls == null || !AMAZON_HOME.contentEquals(cls)) return;
         long now = SystemClock.uptimeMillis();
         if (now - lastLaunch < REPEAT_MS) return;
