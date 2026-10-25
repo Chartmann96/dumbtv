@@ -57,6 +57,7 @@ Undo: `./launcher/install.sh --undo` gives HOME back to Amazon's launcher.
 | App order | your order, or recently used: the apps row re-sorts on each return home, newest first. It counts apps opened from dumbtv home, plus apps opened any other way (voice, another app) on Fire OS 6, where the launcher already has usage access. Apps never opened keep your order after the rest |
 | App names | on focus, always, never |
 | Clock | system, 24-hour, 12-hour |
+| Memory meter | hidden, shown: free memory under the date, with a bar of what is in use; amber, with "running low", when Android reports low memory or under 15% is free. It only shows the numbers: it closes and frees nothing, and needs no permission |
 | Inputs row | shown, hidden |
 | Open inputs with | Automatic, the TV's app, dumbtv home (see below) |
 | Background | black, graphite, midnight, image, adaptive, adaptive tint |
@@ -105,6 +106,8 @@ order=custom
 labels=focus
 # auto 24h 12h
 clock=auto
+# off on
+memory=off
 # on off
 inputs=on
 # auto tv home
