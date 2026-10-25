@@ -19,6 +19,8 @@ ADB=${ADB:-adb}
 adb_() { "$ADB" ${ADB_SERIAL:+-s "$ADB_SERIAL"} "$@"; }
 sh_() { adb_ shell "$@" </dev/null; }
 installed() { sh_ pm path "$1" 2>/dev/null | grep -q '^package:'; }
+# shellcheck disable=SC1091
+source ../scripts/home.sh
 
 mode=release
 case ${1:-} in
@@ -145,7 +147,7 @@ sh_ dumpsys deviceidle whitelist +$PKG >/dev/null
 if [[ $dev_sdk -lt 28 ]]; then
   set_guard ""
   sh_ appops set $PKG GET_USAGE_STATS allow
-  sh_ am start -W -n $PKG/.Home >/dev/null
+  start_home $PKG/.Home
   sleep 3
   if ! grep -q 'isForeground=true' <<<"$(sh_ dumpsys activity services $PKG 2>/dev/null)"; then
     echo "error: the Fire OS 6 home keeper did not start ($PKG/.Keeper)" >&2
@@ -195,7 +197,7 @@ if [[ $bound == 0 ]]; then
   set_guard ""
   exit 1
 fi
-sh_ am start -W -n $PKG/.Home >/dev/null
+start_home $PKG/.Home
 if installed com.spocky.projengmenu; then
   echo "note: Projectivy is still installed but no longer used — adb uninstall com.spocky.projengmenu"
 fi
