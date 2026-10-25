@@ -35,8 +35,9 @@ import android.view.accessibility.AccessibilityEvent;
  * false"). The cover is such a window, so the launch waits until the cover has reached the
  * window manager: {@link #launchWhenCovered} fires it from the cover's first draw pass.
  *
- * Waking from standby resumes whatever was on screen without a new window event. If that was
- * Amazon's launcher, or nothing is known yet (as after an update), our home is brought up at once.
+ * Waking from standby resumes whatever was on screen without a new window event. If the last
+ * window was Amazon's home screen, ours is brought up at once. Amazon's other launcher screens,
+ * such as its settings grid, are left alone, as is a wake before any window was seen.
  */
 public final class Guard extends AccessibilityService {
     static final String AMAZON = "com.amazon.tv.launcher";
@@ -53,11 +54,11 @@ public final class Guard extends AccessibilityService {
     private final Runnable launch = () -> home(this);
     private View cover;
     private long lastLaunch;
-    private String top;
+    private boolean onAmazonHome;
     private final BroadcastReceiver screenOn = new BroadcastReceiver() {
         @Override
         public void onReceive(Context c, Intent i) {
-            if (!paused && (top == null || AMAZON.equals(top))) launchWhenCovered();
+            if (!paused && onAmazonHome) launchWhenCovered();
         }
     };
 
@@ -140,13 +141,13 @@ public final class Guard extends AccessibilityService {
         if (pkg == null) return;
         if (!AMAZON.contentEquals(pkg)) {
             if ("com.android.systemui".contentEquals(pkg) || "android".contentEquals(pkg)) return;
-            top = pkg.toString();
+            onAmazonHome = false;
             paused = false;
             if (!getPackageName().contentEquals(pkg)) arrived(this);
             return;
         }
-        top = AMAZON;
-        if (paused || cls == null || !AMAZON_HOME.contentEquals(cls)) return;
+        onAmazonHome = cls != null && AMAZON_HOME.contentEquals(cls);
+        if (paused || !onAmazonHome) return;
         long now = SystemClock.uptimeMillis();
         if (now - lastLaunch < REPEAT_MS) return;
         lastLaunch = now;
