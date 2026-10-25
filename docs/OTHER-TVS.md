@@ -127,7 +127,7 @@ blocking at the router.
 
 No ADB. Older firmware exposes Chrome DevTools on port 9223; newer sets expose an
 MQTT broker on 36669 for remote control. Both are control surfaces. Web apps can
-be installed by DNS-spoofing `vidaahub.com` ([trialuser/vidaa-appstore](https://github.com/trialuser/vidaa-appstore)),
+be installed by DNS-spoofing `vidaahub.com` ([trialuser/vidaa-appstore](https://github.com/trialuser/vidaa-appstore)).
 That installs apps; it does not remove any.
 
 Hidden menus: service menu via Settings → Sound → Advanced Audio Settings →
