@@ -21,7 +21,7 @@ class VerifyTests(unittest.TestCase):
                    alarms='min_futurity=0',
                    landed='tv.dumbtv.home/.Home',
                    away='com.amazon.tv.launcher/.ui.MainSettingsActivity',
-                   dnsfilter='0', extra=None):
+                   dnsfilter='0', extra=None, keep=''):
         # Android 14's shape (the fake reports sdk 34): a per-task topResumedActivity=,
         # and the top-level ResumedActivity: after the task list.
         def resumed(app):
@@ -45,6 +45,8 @@ class VerifyTests(unittest.TestCase):
             f'settings --user {user} get secure accessibility_enabled': {'out': enabled},
             'dumpsys accessibility': {'out': dump, 'code': dump_code},
             'pm list packages -d': {'out': ''},
+            'pm list packages': {'out': ''},
+            'settings list secure; settings list global': {'out': self.applied_settings()},
             'settings get secure screensaver_components': {'out': 'null'},
             'am start -a android.intent.action.MAIN -c android.intent.category.LEANBACK_SETTINGS': {'out': ''},
             'input keyevent KEYCODE_HOME': {'out': ''},
@@ -69,7 +71,7 @@ class VerifyTests(unittest.TestCase):
             data.write_text(json.dumps(replies))
             env = dict(os.environ, ADB=str(ROOT / 'tests/fake_verify_adb.py'),
                        SERIAL='test-tv', CONF=str(tmp / 'absent.conf'),
-                       DNSFILTER=dnsfilter, LAUNCHER=launcher, FAKE_ADB_LOG=str(log),
+                       DNSFILTER=dnsfilter, LAUNCHER=launcher, KEEP_APPS=keep, FAKE_ADB_LOG=str(log),
                        FAKE_ADB_RESPONSES=str(data))
             result = subprocess.run(['bash', str(ROOT / 'scripts/verify.sh')],
                                     env=env, text=True, capture_output=True)
@@ -77,6 +79,16 @@ class VerifyTests(unittest.TestCase):
         self.assertNotIn('unexpected command', result.stdout + result.stderr)
         # The fake refuses any command it has no reply for, so nothing else reaches a TV.
         return result, calls
+
+    @staticmethod
+    def applied_settings(**changed):
+        """`settings list` output for a TV where debloat.sh applied every privacy setting."""
+        rows = []
+        for line in (ROOT / 'data/fireos/settings.txt').read_text().splitlines():
+            line = line.split('#')[0].split()
+            if len(line) == 3:
+                rows.append(f'{line[1]}={changed.get(line[1], line[2])}')
+        return '\n'.join(rows)
 
     @staticmethod
     def modern(bound, user=0):
@@ -96,6 +108,39 @@ class VerifyTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertIn('2 disabled', result.stdout)
         self.assertIn('com.amazon.ftv.screensaver is disabled, so the TV sleeps', result.stdout)
+
+    def test_privacy_settings_as_set(self):
+        result, _ = self.run_verify(self.modern(LABEL))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertRegex(result.stdout, r'ok +settings +\d+ privacy settings as set')
+        self.assertNotIn('enabled again', result.stdout)
+
+    def test_a_setting_an_update_reset_is_flagged(self):
+        result, _ = self.run_verify(self.modern(LABEL), extra={
+            'settings list secure; settings list global':
+                {'out': self.applied_settings(limit_ad_tracking='0')},
+        })
+        self.assertIn("back to Amazon's values: limit_ad_tracking=0", result.stdout)
+
+    def test_a_package_an_update_enabled_again_is_flagged(self):
+        result, _ = self.run_verify(self.modern(LABEL), extra={
+            'pm list packages': {'out': 'package:com.amazon.tv.acr\npackage:com.netflix.ninja'},
+        })
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn('enabled again: com.amazon.tv.acr;', result.stdout)
+
+    def test_a_package_the_owner_kept_is_not_flagged(self):
+        result, _ = self.run_verify(self.modern(LABEL), keep='com.amazon.tv.acr', extra={
+            'pm list packages': {'out': 'package:com.amazon.tv.acr'},
+        })
+        self.assertNotIn('enabled again', result.stdout)
+
+    def test_a_package_still_disabled_is_not_flagged(self):
+        result, _ = self.run_verify(self.modern(LABEL), extra={
+            'pm list packages': {'out': 'package:com.amazon.tv.acr'},
+            'pm list packages -d': {'out': 'package:com.amazon.tv.acr'},
+        })
+        self.assertNotIn('enabled again', result.stdout)
 
     def test_bound_android9_format(self):
         dump = f'User state[attributes:{{id=0, currentUser=true}}\n services:{{{LABEL}}}]'
