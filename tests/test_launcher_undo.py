@@ -42,11 +42,14 @@ class LauncherUndoTest(unittest.TestCase):
                                  "secure/enabled_accessibility_services": GUARD})
         self.assertNotIn("global/alarm_manager_constants", settings)
 
-    def test_the_doze_exemption_and_the_preferred_home_go_too(self):
+    def test_the_doze_exemption_goes_too(self):
         commands, settings = self.undo({"secure/enabled_accessibility_services": GUARD})
         self.assertIn("dumpsys deviceidle whitelist -tv.dumbtv.home", commands)
-        self.assertIn("cmd package clear-package-preferred-activities tv.dumbtv.home", commands)
         self.assertNotIn(GUARD, settings.get("secure/enabled_accessibility_services", ""))
+
+    def test_other_accessibility_services_are_kept(self):
+        _, settings = self.undo({"secure/enabled_accessibility_services": f"example.reader/.Service:{GUARD}"})
+        self.assertEqual(settings["secure/enabled_accessibility_services"], "example.reader/.Service")
 
     def test_android14_undoes_the_device_config_value(self):
         # Android 12+ keeps min_futurity in DeviceConfig. The global setting is undone as

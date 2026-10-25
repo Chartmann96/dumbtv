@@ -97,22 +97,20 @@ put_secure() {
 # Puts $1 (or nothing) in place of any launcher's service, keeping every other service.
 set_guard() {
   local cur
-  cur=$(sh_ settings get secure enabled_accessibility_services | tr -d '\r')
-  [[ $cur == null ]] && cur=
-  cur=$(printf '%s' "$cur" | tr ':' '\n' | { grep -vxF -e "$GUARD" -e "$PKG/.Guard" -e "$OLD_GUARD" -e '' || true; } | paste -sd: -)
+  orig=$(sh_ settings get secure enabled_accessibility_services | tr -d '\r')
+  [[ $orig == null ]] && orig=
+  cur=$(printf '%s' "$orig" | tr ':' '\n' | { grep -vxF -e "$GUARD" -e "$PKG/.Guard" -e "$OLD_GUARD" -e '' || true; } | paste -sd: -)
   if [[ -n ${1:-} ]]; then cur=${cur:+$cur:}$1; fi
   # Clearing first makes the accessibility manager rebind a service whose process died. The
   # other services live only in $orig meanwhile: if this is cut short, the trap puts them back.
-  orig=$(sh_ settings get secure enabled_accessibility_services | tr -d '\r')
-  [[ $orig == null ]] && orig=
-  trap 'put_secure enabled_accessibility_services "$orig" || true' EXIT INT TERM
+  trap 'put_secure enabled_accessibility_services "$orig" || true' EXIT
+  trap 'exit 130' INT TERM
   put_secure enabled_accessibility_services ""
   sleep 1
   if [[ -n $cur ]]; then
     put_secure enabled_accessibility_services "$cur"
     put_secure accessibility_enabled 1
   else
-    put_secure enabled_accessibility_services ""
     put_secure accessibility_enabled 0
   fi
   trap - EXIT INT TERM
@@ -129,9 +127,7 @@ if [[ $mode == undo ]]; then
   sh_ appops set $PKG GET_USAGE_STATS default >/dev/null 2>&1 || true
   set_futurity off
   set_guard ""
-  # What the install added besides: the Doze exemption and the preferred HOME activity.
   sh_ dumpsys deviceidle whitelist -$PKG >/dev/null 2>&1 || true
-  sh_ cmd package clear-package-preferred-activities $PKG >/dev/null 2>&1 || true
   sh_ am start -a android.intent.action.MAIN -c android.intent.category.HOME >/dev/null 2>&1 || true
   echo "HOME handed back to Amazon's launcher (dumbtv home stays installed: adb uninstall $PKG)"
   exit 0
