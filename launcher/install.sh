@@ -223,11 +223,12 @@ sleep 2
 # The setting alone proves nothing: Fire OS decides whether the service is bound. On
 # Fire OS 6.7 its A11yAuthorizer refuses services from packages Amazon does not trust.
 # The dump names the service by its label, not its package, so match the label inside the
-# current user's bound-services section (same parser verify.sh uses).
+# current user's bound-services section (same parser verify.sh uses). Right after a fresh
+# install a Fire TV Cube took about 8 s to bind it.
 source ../scripts/accessibility.sh
 user=$(sh_ am get-current-user | tr -d '\r')
 bound=0
-for _ in 1 2 3 4 5; do
+for _ in $(seq 1 15); do
   if sh_ dumpsys accessibility | guard_bound "${user:-0}"; then bound=1; break; fi
   sleep 1
 done
