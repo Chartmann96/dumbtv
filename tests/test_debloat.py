@@ -49,7 +49,8 @@ class DebloatTest(unittest.TestCase):
             log.touch()
             (tmp / "dumbtv.conf").write_text(conf)
             env = dict(os.environ, ADB=str(ROOT / "tests" / "fake_tv.py"), ADB_SERIAL="test-tv",
-                       FAKE_TV_STATE=str(state), FAKE_TV_LOG=str(log), CONF=str(tmp / "dumbtv.conf"))
+                       FAKE_TV_STATE=str(state), FAKE_TV_LOG=str(log), CONF=str(tmp / "dumbtv.conf"),
+                       REPORT=str(tmp / "report"))
             env.pop("REMOVE_EXTRA", None)
             env.pop("KEEP_APPS", None)
             env.pop("ALEXA", None)
@@ -59,10 +60,18 @@ class DebloatTest(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             commands = log.read_text().splitlines()
+            report = tmp / "report" / "debloat.txt"
+            self.report = report.read_text().splitlines() if report.exists() else None
         disabled = {c.split()[-1] for c in commands if c.startswith("pm disable-user")}
         uninstalled = {c.split()[-1] for c in commands if c.startswith("pm uninstall")}
         settings = [c for c in commands if c.startswith("settings put")]
         return disabled, uninstalled, settings
+
+    def test_the_log_goes_to_the_report_folder_given(self):
+        # A test run must never overwrite the owner's real report/debloat.txt.
+        self.run_debloat()
+        self.assertIsNotNone(self.report, "debloat.txt was not written to REPORT")
+        self.assertTrue(any(line.endswith("\tdisabled") for line in self.report))
 
     def test_default_touches_no_app(self):
         disabled, uninstalled, _ = self.run_debloat()
