@@ -16,8 +16,8 @@ DNS_UPSTREAM_SET=0; DNS_UPSTREAM_ARG=""
 flag01() { case $2 in 0|1) ;; *) die "$1 takes 0 or 1, got '$2'" ;; esac; }
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --keep)       KEEP_ARG=$2; shift 2 ;;
-    --remove)     REMOVE_ARG=$2; shift 2 ;;
+    --keep)       [[ $# -ge 2 ]] || die "--keep takes package names"; KEEP_ARG=$2; shift 2 ;;
+    --remove)     [[ $# -ge 2 ]] || die "--remove takes package names"; REMOVE_ARG=$2; shift 2 ;;
     --prime)      flag01 "$1" "${2:-}"; PRIME_ARG=$2; shift 2 ;;
     --alexa)      flag01 "$1" "${2:-}"; ALEXA_ARG=$2; shift 2 ;;
     --launcher)   flag01 "$1" "${2:-}"; LAUNCHER_ARG=$2; shift 2 ;;
