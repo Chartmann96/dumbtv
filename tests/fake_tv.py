@@ -57,6 +57,16 @@ if words[:1] == ['settings']:
     elif verb == 'delete' and len(rest) == 2:
         settings.pop(f'{rest[0]}/{rest[1]}', None)
         save()
+elif words[:1] == ['device_config'] and len(words) >= 4:
+    key = f'config/{words[2]}/{words[3]}'
+    if words[1] == 'get':
+        print(settings.get(key, 'null'))
+    elif words[1] == 'put' and len(words) == 5:
+        settings[key] = words[4]
+        save()
+    elif words[1] == 'delete':
+        settings.pop(key, None)
+        save()
 elif command == 'echo ok':
     print('ok')
 elif command == 'cat /proc/sys/kernel/random/boot_id':

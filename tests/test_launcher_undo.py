@@ -15,12 +15,12 @@ GUARD = "tv.dumbtv.home/tv.dumbtv.home.Guard"
 
 
 class LauncherUndoTest(unittest.TestCase):
-    def undo(self, settings):
+    def undo(self, settings, sdk=28):
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)
             state = tmp / "state.json"
             state.write_text(json.dumps({"packages": {"tv.dumbtv.home": {"system": False, "enabled": True}},
-                                         "settings": settings}))
+                                         "settings": settings, "sdk": sdk}))
             log = tmp / "commands.log"
             log.touch()
             env = dict(os.environ, ADB=str(ROOT / "tests" / "fake_tv.py"), ADB_SERIAL="test-tv",
@@ -47,6 +47,23 @@ class LauncherUndoTest(unittest.TestCase):
         self.assertIn("dumpsys deviceidle whitelist -tv.dumbtv.home", commands)
         self.assertIn("cmd package clear-package-preferred-activities tv.dumbtv.home", commands)
         self.assertNotIn(GUARD, settings.get("secure/enabled_accessibility_services", ""))
+
+    def test_android14_undoes_the_device_config_value(self):
+        # Android 12+ keeps min_futurity in DeviceConfig. The global setting is undone as
+        # well, because installs before that split wrote it on these TVs too.
+        commands, settings = self.undo({"config/alarm_manager/min_futurity": "0",
+                                        "global/alarm_manager_constants": "min_futurity=0",
+                                        "secure/enabled_accessibility_services": GUARD}, sdk=34)
+        self.assertNotIn("config/alarm_manager/min_futurity", settings)
+        self.assertNotIn("global/alarm_manager_constants", settings)
+        self.assertIn("device_config delete alarm_manager min_futurity", commands)
+
+    def test_android14_puts_an_earlier_value_back(self):
+        _, settings = self.undo({"config/alarm_manager/min_futurity": "0",
+                                 "global/dumbtv_min_futurity": "2000",
+                                 "secure/enabled_accessibility_services": GUARD}, sdk=34)
+        self.assertEqual(settings["config/alarm_manager/min_futurity"], "2000")
+        self.assertNotIn("global/dumbtv_min_futurity", settings)
 
 
 if __name__ == "__main__":

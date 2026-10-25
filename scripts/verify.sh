@@ -54,7 +54,13 @@ fi
 
 home=$(front_activity)
 wake=$(dev 'dumpsys power' | sed -n 's/.*mWakefulness=\([A-Za-z]*\).*/\1/p' | head -1)
-alarms=$(dev 'settings get global alarm_manager_constants' | tr -d '\r')
+# Android 12 and later read min_futurity from DeviceConfig, not from the global setting.
+if [[ $SDK -ge 31 ]]; then
+  futurity=$(dev 'device_config get alarm_manager min_futurity' | tr -d '\r')
+else
+  futurity=$(dev 'settings get global alarm_manager_constants' | tr -d '\r' | tr ',' '\n' |
+    sed -n 's/^min_futurity=//p' | head -1)
+fi
 if [[ $LAUNCHER == 0 ]]; then
   printf '%-10s %-38s %s\n' skip home "LAUNCHER=0, not checked"
 elif [[ $SDK -lt 28 ]]; then
@@ -96,7 +102,7 @@ else
       printf '%-10s %-38s %s\n' FAIL home "hook disabled (front: ${home:-unknown}, wakefulness: ${wake:-?})"; fail=1 ;;
     *) printf '%-10s %-38s %s\n' FAIL home "cannot verify accessibility binding; inspect dumpsys accessibility"; fail=1 ;;
   esac
-  if [[ $alarms != *min_futurity=0* ]]; then
+  if [[ $futurity != 0 ]]; then
     # Without it HOME still works, but Amazon's home shows for 5 s first.
     printf '%-10s %-38s %s\n' FAIL home-speed "min_futurity=0 missing; re-run launcher.sh"; fail=1
   fi
@@ -180,7 +186,7 @@ elif [[ $SDK -lt 28 ]]; then
   printf '%-10s %-38s %s\n' skip alarm "Fire OS 6 Keeper uses moveTaskToFront"
 else
   # dumbtv home needs this to answer HOME immediately; an update can drop it.
-  if dev 'settings get global alarm_manager_constants' | grep -q 'min_futurity=0'; then
+  if [[ $futurity == 0 ]]; then
     printf '%-10s %-38s %s\n' ok alarm "min_futurity=0"
   else
     printf '%-10s %-38s %s\n' warn alarm "missing min_futurity=0 (HOME is slower, still works)"

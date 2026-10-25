@@ -24,8 +24,9 @@ import android.view.accessibility.AccessibilityEvent;
  *
  * A plain startActivity right after a HOME press is held back by Android's five-second
  * app-switch delay. An alarm-fired PendingIntent is sent by system_server, which is exempt,
- * so {@link #home} launches through an alarm. That alarm only fires at once when the global
- * {@code alarm_manager_constants} has {@code min_futurity=0}; install.sh sets it.
+ * so {@link #home} launches through an alarm. That alarm only fires at once with
+ * {@code min_futurity=0}, which install.sh sets: in the global {@code alarm_manager_constants}
+ * up to Android 11, in DeviceConfig {@code alarm_manager} from Android 12.
  *
  * Amazon's home is covered with a plain overlay until ours has drawn, so it never shows.
  *

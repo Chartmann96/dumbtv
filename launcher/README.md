@@ -185,8 +185,9 @@ protected package. Measured on a Fire OS 7 television:
 2. **Android delays app launches for 5 s after HOME** (`APP_SWITCH_DELAY_TIME`),
    which is why other launchers flash Amazon's home. A launch fired by
    AlarmManager comes from `system_server` and is exempt.
-   `install.sh` sets `settings global alarm_manager_constants min_futurity=0` so
-   the alarm fires at once; `--undo` removes it.
+   `install.sh` sets `min_futurity=0` so the alarm fires at once; `--undo` removes
+   it. Up to Android 11 that is `settings global alarm_manager_constants`; Android
+   12 and later ignore it and read `device_config` namespace `alarm_manager`.
 3. **Amazon's home is covered before it draws.** `Guard` keeps an overlay ready,
    with no surface while idle so it costs nothing during video, and removes it once
    dumbtv home is on screen.

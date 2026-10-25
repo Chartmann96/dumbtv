@@ -39,8 +39,10 @@ app-op fixed it. That is a TCL rule, not something to grant on every TV; see
 ### Amazon's home shows for about five seconds before dumbtv home
 
 The `min_futurity=0` alarm setting was lost (an update or a settings reset). Check
-with `adb shell settings get global alarm_manager_constants`, then run
-`./scripts/launcher.sh -y`. With it set, HOME shows about 0.3 s of black.
+with `adb shell settings get global alarm_manager_constants` (Fire OS 6 to 8), or
+`adb shell device_config get alarm_manager min_futurity` on a Fire TV built on
+Android 12 or later, then run `./scripts/launcher.sh -y`. With it set, HOME shows
+about 0.3 s of black.
 
 ### Settings bounces back to the home screen
 

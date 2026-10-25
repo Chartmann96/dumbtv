@@ -23,7 +23,7 @@ note "the prebuilt APK comes from this repo's GitHub release and is checksum-ver
 if [[ $SDK -lt 28 ]]; then
   note "take over HOME: Keeper (UsageStats + moveTaskToFront, no accessibility)"
 else
-  note "take over HOME: accessibility service + settings global alarm_manager_constants min_futurity=0"
+  note "take over HOME: accessibility service + alarm min_futurity=0"
 fi
 note "Amazon's launcher stays installed: hold HOME for Fire OS's menu, or Options > Open Amazon's home screen"
 if [[ $DRY_RUN == 1 ]]; then

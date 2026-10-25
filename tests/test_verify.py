@@ -17,7 +17,8 @@ class VerifyTests(unittest.TestCase):
                'appstore-tv-prod-na.amazon.com', 'm.media-amazon.com']
 
     def run_verify(self, dump, *, component='tv.dumbtv.home/.Guard', enabled='1',
-                   user='0', launcher='1', dump_code=0, alarms='min_futurity=0',
+                   user='0', launcher='1', dump_code=0, sdk='34', futurity='0',
+                   alarms='min_futurity=0',
                    landed='tv.dumbtv.home/.Home',
                    away='com.amazon.tv.launcher/.ui.MainSettingsActivity',
                    dnsfilter='0', extra=None):
@@ -28,7 +29,7 @@ class VerifyTests(unittest.TestCase):
                     '      topResumedActivity=ActivityRecord{1 u0 ' + app + ' t5}\n'
                     '  ResumedActivity: ActivityRecord{1 u0 ' + app + ' t5}')
         replies = {
-            'getprop ro.build.version.sdk': {'out': '34'},
+            'getprop ro.build.version.sdk': {'out': sdk},
             # Asked three times: what is in front now, what the check moved to, and
             # where HOME landed.
             'dumpsys activity activities': [
@@ -37,6 +38,7 @@ class VerifyTests(unittest.TestCase):
                 {'out': resumed(landed)},
             ],
             'dumpsys power': {'out': 'mWakefulness=Awake'},
+            'device_config get alarm_manager min_futurity': {'out': futurity},
             'settings get global alarm_manager_constants': {'out': alarms},
             'am get-current-user': {'out': user},
             f'settings --user {user} get secure enabled_accessibility_services': {'out': component},
@@ -160,9 +162,26 @@ class VerifyTests(unittest.TestCase):
         self.assertFalse(any('accessibility' in ' '.join(c) for c in calls))
 
     def test_speed_requirement_is_preserved(self):
-        result, _ = self.run_verify(self.modern(LABEL), alarms='null')
+        result, _ = self.run_verify(self.modern(LABEL), futurity='null')
         self.assertEqual(result.returncode, 1)
         self.assertIn('min_futurity=0 missing', result.stdout)
+
+    def test_android14_ignores_the_android11_alarm_setting(self):
+        # Android 12+ reads min_futurity from DeviceConfig only (issue #57): the global
+        # setting an older install wrote there must not pass the check.
+        result, _ = self.run_verify(self.modern(LABEL), futurity='null', alarms='min_futurity=0')
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('min_futurity=0 missing', result.stdout)
+
+    def test_android11_reads_the_global_alarm_setting(self):
+        result, _ = self.run_verify(self.modern(LABEL), sdk='30', futurity='null',
+                                    alarms='other=1,min_futurity=0')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn('ok         alarm', result.stdout)
+
+    def test_a_futurity_that_only_starts_with_zero_is_not_zero(self):
+        result, _ = self.run_verify(self.modern(LABEL), sdk='30', alarms='min_futurity=05000')
+        self.assertEqual(result.returncode, 1)
 
     def test_home_key_proves_the_takeover(self):
         result, _ = self.run_verify(self.modern(LABEL))
