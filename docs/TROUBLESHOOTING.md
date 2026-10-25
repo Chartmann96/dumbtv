@@ -99,8 +99,8 @@ there.
 `DNS_UPSTREAM` in `dumbtv.conf` is a space-separated list of resolver IPs, asked
 on port 53 over UDP (DNS over TLS or HTTPS is not supported). The filter still
 blocks its own list, and forwards everything else to those resolvers instead of
-the router. Fire OS 8 is the exception: its config cannot be pushed, so this
-setting does not reach it.
+the router. On Fire OS 8 it reaches the app through the `adb restore` setup
+(see "Fire OS 8" below), not through the manual fallback.
 
 ```sh
 ./scripts/configure.sh --dns-upstream "76.76.2.45 76.76.10.45"
@@ -218,13 +218,25 @@ level and switch to `data/fireos6/` on their own.
 
 ## Fire OS 8
 
-- **Nothing is blocked after `dnsfilter.sh`.** adb cannot write the app's folder
-  on Android 11, so the script pushes the list to
-  `/sdcard/Android/media/dnsfilter.android/` and you point the app at it once:
-  Advanced settings › Configure filter update › add
+- **How the filter is set up.** adb cannot write personalDNSfilter's folder on
+  Android 11, so `dnsfilter.sh` hands the config and list over with `adb restore`:
+  Android clears the app's data and unpacks the files as the app. The TV shows
+  "Restore my data?" and the script answers it with remote keys; if that fails,
+  press RESTORE MY DATA yourself within a minute. A TV with a backup password
+  set wants it typed into that screen.
+- **Nothing is blocked after `dnsfilter.sh`.** Reboot once and run `verify.sh`.
+  If the restore could not be used, the script stops at one manual step instead:
+  in personalDNSfilter tick Advanced settings, then Configure filter update,
+  untick every list, press the edit button on the last row (named `<new>`), set
+  the URL to
   `file:///storage/emulated/0/Android/media/dnsfilter.android/dumbtv-blocklist.txt`
-  (three slashes), untick the other entries, reboot. `verify.sh` then checks the
-  blocked hosts directly.
+  (three slashes), tick Active, OK, and reboot. There is no add button: the
+  `<new>` row is how an entry is added.
+- **The app's screen will not move with the remote.** It is a phone layout
+  letterboxed on the TV. Drive it over adb: `adb shell uiautomator dump` gives
+  each control's bounds, `adb shell input tap X Y` presses it, and
+  `adb shell input text` types into a field (close the keyboard with
+  `adb shell input keyevent KEYCODE_BACK` before the next tap).
 - **The on-screen keyboard swallows keys** while a text field is focused. Batch
   deletes into one call (`input keyevent 67 67 67`), and close the keyboard with
   BACK before tapping another field.
