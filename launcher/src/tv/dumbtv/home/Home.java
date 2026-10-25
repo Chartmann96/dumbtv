@@ -65,6 +65,7 @@ public final class Home extends Activity {
     private View shade;
     private View tint;
     private TextView clock, date;
+    private Meter meter;
     private Row apps, inputs;
     private Map<String, Long> recent = new HashMap<>();
     private Tile moving;
@@ -478,6 +479,12 @@ public final class Home extends Activity {
         date.setPadding(dp(2), dp(8), 0, 0);
         when.addView(clock);
         when.addView(date);
+        meter = new Meter(this);
+        meter.setVisibility(View.GONE);
+        LinearLayout.LayoutParams under = new LinearLayout.LayoutParams(WRAP, WRAP);
+        under.topMargin = dp(12);
+        under.leftMargin = dp(2);
+        when.addView(meter, under);
         head.addView(when, new LinearLayout.LayoutParams(0, WRAP, 1f));
         head.addView(chip("Options", v -> startActivity(new Intent(this, Options.class))));
         head.addView(chip("Settings", v -> openSettings()));
@@ -544,6 +551,8 @@ public final class Home extends Activity {
         applied = cfg.version();
         int accent = cfg.accent();
         for (TextView c : chips) Ui.focusStyle(c, accent, 0x14FFFFFF, dp(18));
+        meter.setVisibility("on".equals(cfg.get(Config.MEMORY)) ? View.VISIBLE : View.GONE);
+        meter.setAccent(accent);
         render(apps);
         render(inputs);
         background();
@@ -741,6 +750,9 @@ public final class Home extends Activity {
         }
         Locale locale = Locale.getDefault();
         date.setText(DateFormat.format(DateFormat.getBestDateTimePattern(locale, "EEEEdMMMM"), now));
+        if (meter.getVisibility() == View.VISIBLE) {
+            meter.update((android.app.ActivityManager) getSystemService(Context.ACTIVITY_SERVICE));
+        }
         // hourly and time-of-day rotations change while the screen stays open; a no-op otherwise
         background();
     }
