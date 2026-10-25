@@ -90,8 +90,13 @@ final class Tile extends View {
     @Override
     protected void onFocusChanged(boolean focused, int direction, Rect previous) {
         super.onFocusChanged(focused, direction, previous);
-        float s = focused ? FOCUS_SCALE : 1f;
-        animate().scaleX(s).scaleY(s).setDuration(110).start();
+        animate().cancel();
+        if (focused) {
+            animate().scaleX(FOCUS_SCALE).scaleY(FOCUS_SCALE).setDuration(110).start();
+        } else {
+            setScaleX(1f);
+            setScaleY(1f);
+        }
         invalidate();
     }
 
