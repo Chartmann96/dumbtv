@@ -26,6 +26,45 @@ esac
 '''
 
 
+# A TV that has a package, lacks another, and can drop off the network mid-run.
+PRESENT_ADB = r'''#!/usr/bin/env bash
+gone=$([[ -f "$GONE" ]] && echo 1)
+case "$*" in
+  "-s test-tv get-state") [[ -n $gone ]] && exit 1; echo device ;;
+  "-s test-tv shell pm path here.pkg") [[ -n $gone ]] && { echo "error: closed"; exit 1; }; echo "package:/data/app/here.apk" ;;
+  "-s test-tv shell pm path absent.pkg") [[ -n $gone ]] && { echo "error: closed"; exit 1; }; exit 1 ;;
+  *) exit 92 ;;
+esac
+'''
+
+
+class PresentTest(unittest.TestCase):
+    def present(self, pkg, gone=False):
+        with tempfile.TemporaryDirectory() as tmp:
+            adb = Path(tmp) / "adb"
+            adb.write_text(PRESENT_ADB)
+            adb.chmod(0o755)
+            flag = Path(tmp) / "gone"
+            if gone:
+                flag.touch()
+            env = dict(os.environ, ADB=str(adb), ADB_SERIAL="test-tv", GONE=str(flag))
+            return subprocess.run(
+                ["bash", "-c", 'set -uo pipefail; source "$1"; present "$2" && echo YES || echo NO',
+                 "bash", str(ROOT / "scripts" / "lib.sh"), pkg],
+                env=env, capture_output=True, text=True, timeout=30)
+
+    def test_an_installed_package(self):
+        self.assertIn("YES", self.present("here.pkg").stdout)
+
+    def test_a_missing_package(self):
+        self.assertIn("NO", self.present("absent.pkg").stdout)
+
+    def test_a_lost_tv_stops_the_script_instead_of_reading_as_missing(self):
+        result = self.present("absent.pkg", gone=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertNotIn("NO", result.stdout)
+        self.assertIn("stopped responding", result.stderr)
+
 class NeedDeviceTest(unittest.TestCase):
     def test_install_existing_detected_under_pipefail(self):
         with tempfile.TemporaryDirectory() as tmp:
