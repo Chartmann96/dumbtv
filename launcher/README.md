@@ -40,6 +40,7 @@ Undo: `./launcher/install.sh --undo` gives HOME back to Amazon's launcher.
 |---|---|
 | OK | open the app, or switch to the input |
 | Hold OK, or ☰ Menu | Move, Rename, Hide, App info |
+| With Child lock on: hold ☰ Menu for 3 s | Options |
 | Move mode | ◀ ▶ moves the tile, ▲ ▼ moves it a line in the grid, any other key drops it |
 | Up from the top row | Options and Settings |
 | Back on the home screen | jump to the first tile |
@@ -62,6 +63,7 @@ Undo: `./launcher/install.sh --undo` gives HOME back to Amazon's launcher.
 | Open inputs with | Automatic, the TV's app, dumbtv home (see below) |
 | Background | black, graphite, midnight, image, adaptive, adaptive tint |
 | Image dim, wallpaper rotation | for image backgrounds |
+| Child lock | off, on: hides Options and Settings and turns off Hold OK and ☰ Menu on tiles, so the home screen only opens apps and inputs (see below) |
 
 Below them: Next wallpaper, which apps and inputs appear on the home screen, a
 reset for order, names and hidden tiles, and **Open Amazon's home screen**. Apps
@@ -84,6 +86,23 @@ without a TV banner, like the Appstore, start hidden; tick them to add them.
   `TvView`: the picture, the input's name for a moment, and "No signal" when nothing
   is connected. Back returns to the home screen, and HOME releases the input at
   once. Nothing new is requested to do this.
+
+## Child lock
+
+For a TV children use. **Options › Child lock › On** hides the Options and Settings
+buttons and turns off Hold OK and ☰ Menu on tiles, so nobody can move, rename or hide
+a tile, or reach App info, from the home screen. Apps and inputs open as usual.
+
+To change something, **hold ☰ Menu for 3 seconds** on the home screen: Options opens,
+and Child lock › Off brings everything back. A short press does nothing. Over adb,
+`lock=off` in `home.conf` does the same.
+
+It keeps small hands out of dumbtv home; it is not a PIN, and it cannot lock what
+Fire OS owns. Holding HOME still opens Fire OS's own quick menu (on a Fire TV Edition
+TV: Inputs, Apps, Picture, Sound, Sleep Timer), and a remote's app buttons, or its
+Settings button where it has one, still work. A PIN on dumbtv's buttons would leave
+those doors open just the same. Fire OS has its own Parental Controls
+under Settings › Preferences, which use your Amazon PIN; dumbtv leaves them alone.
 
 ## The settings file
 
@@ -118,6 +137,8 @@ background=black
 dim=40
 # off visit hourly daily daytime (visit = every return to the home screen)
 rotate=off
+# off on
+lock=off
 apps.order=com.amazon.firetv.youtube,org.videolan.vlc
 apps.hide=org.videolan.vlc
 apps.show=com.amazon.venezia

@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -133,6 +134,11 @@ public final class Options extends Activity {
         int n = c.values.length;
         cfg.set(c.key, c.values[((i + by) % n + n) % n]);
         refresh();
+        if (c == Config.LOCK && "on".equals(cfg.get(c))) {
+            Toast.makeText(this, "Options and Settings are hidden on the home screen now. "
+                    + "Hold \u2630 Menu for " + Home.UNLOCK_MS / 1000 + " seconds to come back here.",
+                    Toast.LENGTH_LONG).show();
+        }
         return true;
     }
 

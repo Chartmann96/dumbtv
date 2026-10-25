@@ -49,6 +49,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 public final class Home extends Activity {
+    /** How long Menu is held to open Options while the child lock is on. */
+    static final long UNLOCK_MS = 3000;
     private static final int MATCH = ViewGroup.LayoutParams.MATCH_PARENT;
     private static final int WRAP = ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -59,7 +61,7 @@ public final class Home extends Activity {
     private Config cfg;
     private TvInputManager tv;
     private int applied = -1, appsGeneration;
-    private boolean resumed, landed;
+    private boolean resumed, landed, unlockOpened;
     private FrameLayout root;
     private ImageView wall;
     private View shade;
@@ -314,6 +316,16 @@ public final class Home extends Activity {
 
     @Override
     public boolean onKeyDown(int code, KeyEvent e) {
+        if (code == KeyEvent.KEYCODE_MENU && locked()) {
+            // Repeats keep arriving while the button is held; the first one past the hold opens it.
+            if (e.getRepeatCount() == 0) {
+                unlockOpened = false;
+            } else if (!unlockOpened && e.getEventTime() - e.getDownTime() >= UNLOCK_MS) {
+                unlockOpened = true;
+                startActivity(new Intent(this, Options.class));
+            }
+            return true;
+        }
         if (code == KeyEvent.KEYCODE_MENU) {
             View f = getCurrentFocus();
             if (f instanceof Tile) menu((Tile) f);
@@ -527,6 +539,10 @@ public final class Home extends Activity {
         return best;
     }
 
+    private boolean locked() {
+        return "on".equals(cfg.get(Config.LOCK));
+    }
+
     private TextView chip(String label, View.OnClickListener click) {
         TextView v = Ui.text(this, 14, Ui.TEXT, Ui.MEDIUM);
         v.setText(label);
@@ -550,7 +566,10 @@ public final class Home extends Activity {
     private void apply() {
         applied = cfg.version();
         int accent = cfg.accent();
-        for (TextView c : chips) Ui.focusStyle(c, accent, 0x14FFFFFF, dp(18));
+        for (TextView c : chips) {
+            Ui.focusStyle(c, accent, 0x14FFFFFF, dp(18));
+            c.setVisibility(locked() ? View.GONE : View.VISIBLE);
+        }
         meter.setVisibility("on".equals(cfg.get(Config.MEMORY)) ? View.VISIBLE : View.GONE);
         meter.setAccent(accent);
         render(apps);
@@ -631,7 +650,7 @@ public final class Home extends Activity {
                 if (has) focusBackground(((Tile) v).item);
             });
             t.setOnLongClickListener(v -> {
-                menu((Tile) v);
+                if (!locked()) menu((Tile) v);
                 return true;
             });
             if (gridMode) {

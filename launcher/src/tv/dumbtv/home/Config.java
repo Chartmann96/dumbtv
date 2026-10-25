@@ -95,7 +95,15 @@ final class Config {
             new String[] {"off", "visit", "hourly", "daily", "daytime"},
             new String[] {"Off", "Every return home", "Every hour", "Every day", "By time of day"});
 
-    static final Choice[] CHOICES = {ACCENT, TILES, LAYOUT, ORDER, LABELS, CLOCK, MEMORY, INPUTS, SWITCH, BACKGROUND, DIM, ROTATE};
+    /**
+     * For a TV children use: hides Options and Settings and turns off the tile menu, so the home
+     * screen only opens apps and inputs. Holding Menu for {@link Home#UNLOCK_MS} opens Options.
+     */
+    static final Choice LOCK = new Choice("lock", "Child lock", "off",
+            new String[] {"off", "on"},
+            new String[] {"Off", "On"});
+
+    static final Choice[] CHOICES = {ACCENT, TILES, LAYOUT, ORDER, LABELS, CLOCK, MEMORY, INPUTS, SWITCH, BACKGROUND, DIM, ROTATE, LOCK};
 
     /** Folder of wallpapers, next to home.conf, that Background › Image file rotates through. */
     static final String WALLPAPERS = "wallpapers";
