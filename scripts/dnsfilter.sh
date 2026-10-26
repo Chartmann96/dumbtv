@@ -37,6 +37,16 @@ GW=$(gateway)
 step "plan"
 note "filter         personalDNSfilter, runs as a local VPN on the TV"
 note "gateway        $GW (put inside the tunnel so apps cannot bypass the filter)"
+# Every other DNS server the TV knows goes inside the tunnel too. A router that hands out an
+# IPv6 DNS address (eero does) otherwise lets lookups go around the filter over IPv6.
+# Only Fire OS 6 (Android 7.1) fills in net.dns*; on Fire OS 7 and 8 this finds nothing.
+ROUTES=$GW
+for prop in net.dns1 net.dns2 net.dns3 net.dns4; do
+  ip=$(dev "getprop $prop" 2>/dev/null | tr -d '\r' || true)
+  [[ $ip =~ ^[0-9a-fA-F.:]+$ && $ip == *[.:]* && $ip != 127.* && $ip != ::1 ]] || continue
+  [[ "; $ROUTES;" == *"; $ip;"* ]] || ROUTES="$ROUTES; $ip"
+done
+[[ $ROUTES == "$GW" ]] || note "also routed    ${ROUTES#"$GW"; }"
 note "list           HaGeZi Amazon trackers + data/blocklists/extra-hosts.txt"
 upstream=$(fallback_dns) || exit 1
 if [[ -n $upstream ]]; then
@@ -109,7 +119,7 @@ if [[ $DRY_RUN == 0 ]]; then
     -e 's|^previousAutoUpdateURL = .*|previousAutoUpdateURL = |' \
     -e 's|^detectDNS = .*|detectDNS = false|' \
     -e "s|^fallbackDNS = .*|fallbackDNS = $fb|" \
-    -e "s|^routeIPs =.*|routeIPs = $GW|" \
+    -e "s|^routeIPs =.*|routeIPs = $ROUTES|" \
     -e 's|^routeUnderlyingDNS = .*|routeUnderlyingDNS = true|' \
     -e 's|^showInitialInfoPopUp = .*|showInitialInfoPopUp = false|' \
     -e 's|^reloadIntervalDays = .*|reloadIntervalDays = 3650|' \
@@ -139,7 +149,7 @@ if [[ $DRY_RUN == 0 ]]; then
     grep -Eq '^androidAppWhiteList = <none>' "$CONF_OUT" ||
       die "config template changed upstream (androidAppWhiteList did not take)"
   fi
-  grep -Fqx "routeIPs = $GW" "$CONF_OUT" ||
+  grep -Fqx "routeIPs = $ROUTES" "$CONF_OUT" ||
     die "config template changed upstream (routeIPs did not take) — update scripts/dnsfilter.sh"
   if [[ -n $upstream ]]; then
     grep -Fqx "fallbackDNS = $fb" "$CONF_OUT" ||
