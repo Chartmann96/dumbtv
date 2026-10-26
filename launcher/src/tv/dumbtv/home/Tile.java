@@ -32,7 +32,7 @@ final class Tile extends View {
     private final TextPaint inner = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final TextPaint under = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private boolean moving;
-    private final VikingTile viking;
+    private final AfterglowTile viking;
 
     Tile(Context c, Item item, String kind, CharSequence title, int cardW, int cardH,
             String labels, int accent) {
@@ -43,8 +43,8 @@ final class Tile extends View {
         this.cardW = cardW;
         this.cardH = cardH;
         boolean app = Catalog.APPS.equals(kind);
-        viking = app && "viking".equals(Config.get(c).get(Config.TILE_STYLE))
-                ? new VikingTile(c, item.id, title, accent) : null;
+        viking = app && "afterglow".equals(Config.get(c).get(Config.TILE_STYLE))
+                ? new AfterglowTile(c, item.id, title, accent) : null;
         labelH = app && viking == null ? Ui.dp(c, 26) : 0;
         labelAlways = "always".equals(labels);
         labelOnFocus = "focus".equals(labels);

@@ -15,7 +15,7 @@ import android.text.TextUtils;
 import java.util.Locale;
 
 /** Optional text artwork, using only installed icons and locally defined colors. */
-final class VikingTile {
+final class AfterglowTile {
     private final Context context;
     private final String title;
     private final int[] colors;
@@ -26,7 +26,7 @@ final class VikingTile {
     private final TextPaint text = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private CharSequence fitted;
 
-    VikingTile(Context c, String packageId, CharSequence label, int accent) {
+    AfterglowTile(Context c, String packageId, CharSequence label, int accent) {
         context = c;
         title = label.toString().toUpperCase(Locale.ROOT);
         int[] known = BrandColors.forPackage(packageId);
