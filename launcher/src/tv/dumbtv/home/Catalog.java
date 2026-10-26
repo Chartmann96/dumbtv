@@ -50,11 +50,11 @@ final class Catalog {
         }
     }
 
-    /** Loads a banner, or an icon when the app ships no banner. Slow: call off the UI thread. */
-    static void art(PackageManager pm, Item it) {
+    /** Loads a banner, plus an icon for Viking or when there is no banner. Slow: off the UI thread. */
+    static void art(PackageManager pm, Item it, boolean cornerIcon) {
         if (it.info == null) return;
         it.banner = it.info.loadBanner(pm);
-        if (it.banner == null) it.icon = it.info.loadIcon(pm);
+        if (it.banner == null || cornerIcon) it.icon = it.info.loadIcon(pm);
     }
 
     /**
