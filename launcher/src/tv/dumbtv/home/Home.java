@@ -62,6 +62,9 @@ public final class Home extends Activity {
     private TvInputManager tv;
     private int applied = -1, appsGeneration;
     private boolean resumed, landed, unlockOpened;
+    private String lastFocusedKind;
+    private String lastAppId;
+    private String lastInputId;
     private FrameLayout root;
     private ImageView wall;
     private View shade;
@@ -467,8 +470,41 @@ public final class Home extends Activity {
             @Override
             public View focusSearch(View focused, int direction) {
                 if (direction == View.FOCUS_DOWN && chips.contains(focused)) {
+                    View remembered = rememberedTile(lastFocusedKind);
+                    if (remembered != null) return remembered;
                     View below = nearest(apps.tiles(), focused);
                     if (below != null) return below;
+                }
+                if (focused instanceof Tile
+                        && focused.getParent() instanceof ViewGroup) {
+                    Tile tile = (Tile) focused;
+                    ViewGroup parent = (ViewGroup) tile.getParent();
+                    boolean grid = parent instanceof Grid;
+
+                    // Down from the last line of the apps row lands on the input that was
+                    // focused last, not on whichever one happens to be closest.
+                    if (direction == View.FOCUS_DOWN
+                            && Catalog.APPS.equals(tile.kind)) {
+                        boolean hasBelow = grid && belowInGrid(parent, tile);
+                        if (!hasBelow) {
+                            View remembered = rememberedTile(Catalog.INPUTS);
+                            if (remembered != null) return remembered;
+                            View below = nearest(inputs.tiles(), focused);
+                            if (below != null) return below;
+                        }
+                    }
+                    // Up from the first line of the inputs row goes back to the app that was
+                    // focused last.
+                    if (direction == View.FOCUS_UP
+                            && Catalog.INPUTS.equals(tile.kind)) {
+                        boolean hasAbove = grid && aboveInGrid(parent, tile);
+                        if (!hasAbove) {
+                            View remembered = rememberedTile(Catalog.APPS);
+                            if (remembered != null) return remembered;
+                            View above = nearest(apps.tiles(), focused);
+                            if (above != null) return above;
+                        }
+                    }
                 }
                 return super.focusSearch(focused, direction);
             }
@@ -505,6 +541,18 @@ public final class Home extends Activity {
         apps = new Row(Catalog.APPS, "Apps", column);
         inputs = new Row(Catalog.INPUTS, "Inputs", column);
         return root;
+    }
+
+    /** True when the grid has another line below {@code tile}. */
+    private static boolean belowInGrid(ViewGroup parent, Tile tile) {
+        int cols = ((Grid) parent).columns();
+        return parent.indexOfChild(tile) + cols < parent.getChildCount();
+    }
+
+    /** True when the grid has another line above {@code tile}. */
+    private static boolean aboveInGrid(ViewGroup parent, Tile tile) {
+        int cols = ((Grid) parent).columns();
+        return parent.indexOfChild(tile) - cols >= 0;
     }
 
     /**
@@ -647,7 +695,16 @@ public final class Home extends Activity {
             Tile t = new Tile(this, it, row.kind, Catalog.label(cfg, it), w, h, labels, accent);
             t.setOnClickListener(v -> open((Tile) v));
             t.setOnFocusChangeListener((v, has) -> {
-                if (has) focusBackground(((Tile) v).item);
+                if (has) {
+                    Tile tile = (Tile) v;
+                    lastFocusedKind = tile.kind;
+                    if (Catalog.APPS.equals(tile.kind)) {
+                        lastAppId = tile.item.id;
+                    } else {
+                        lastInputId = tile.item.id;
+                    }
+                    focusBackground(tile.item);
+                }
             });
             t.setOnLongClickListener(v -> {
                 if (!locked()) menu((Tile) v);
@@ -665,6 +722,11 @@ public final class Home extends Activity {
             if (Catalog.APPS.equals(row.kind) && !it.artRequested) loadArt(it);
         }
         row.setVisible(!shown.isEmpty());
+        if (shown.isEmpty()) {
+            // Nothing is left to come back to: forget the tile that used to be here.
+            if (Catalog.APPS.equals(row.kind)) lastAppId = null;
+            else lastInputId = null;
+        }
         if (restore >= 0) {
             target.getChildAt(restore).requestFocus();
         } else if (keep != null && target.getChildCount() > 0) {
@@ -743,6 +805,38 @@ public final class Home extends Activity {
             default:
                 return new int[] {dp(180), dp(101)};
         }
+    }
+
+    /**
+     * The tile of {@code kind} that was focused last, or null when there is none left.
+     */
+    private View rememberedTile(String kind) {
+        if (kind == null) return null;
+        String id = Catalog.APPS.equals(kind) ? lastAppId : lastInputId;
+        if (id == null) return null;
+        View v = findTile(kind, id);
+        if (v == null) {
+            // The tile is gone: the row was rebuilt without it.
+            if (Catalog.APPS.equals(kind)) lastAppId = null;
+            else lastInputId = null;
+        }
+        return v;
+    }
+
+    /** The tile with this id in the row of {@code kind}, or null when there is none. */
+    private View findTile(String kind, String id) {
+        if (kind == null || id == null) return null;
+        Row row = Catalog.APPS.equals(kind) ? apps : inputs;
+        ViewGroup tiles = row.tiles();
+        for (int i = 0; i < tiles.getChildCount(); i++) {
+            View v = tiles.getChildAt(i);
+            if (v instanceof Tile
+                    && ((Tile) v).kind.equals(kind)
+                    && ((Tile) v).item.id.equals(id)) {
+                return v;
+            }
+        }
+        return null;
     }
 
     private void focusFirst() {
