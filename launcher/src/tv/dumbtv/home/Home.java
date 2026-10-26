@@ -479,7 +479,23 @@ public final class Home extends Activity {
                         && focused.getParent() instanceof ViewGroup) {
                     Tile tile = (Tile) focused;
                     ViewGroup parent = (ViewGroup) tile.getParent();
+                    int idx = parent.indexOfChild(tile);
+                    int count = parent.getChildCount();
                     boolean grid = parent instanceof Grid;
+                    int cols = grid ? ((Grid) parent).columns() : 1;
+
+                    // Left and right stop at the edge of a row instead of jumping away
+                    // from it: no tile of another row takes the focus.
+                    if (direction == View.FOCUS_LEFT) {
+                        boolean edge = grid ? idx % cols == 0 : idx == 0;
+                        if (edge) return focused;
+                    }
+                    if (direction == View.FOCUS_RIGHT) {
+                        boolean edge = grid
+                                ? (idx + 1) % cols == 0 || idx == count - 1
+                                : idx == count - 1;
+                        if (edge) return focused;
+                    }
 
                     // Down from the last line of the apps row lands on the input that was
                     // focused last, not on whichever one happens to be closest.
