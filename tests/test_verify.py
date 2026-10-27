@@ -1,6 +1,7 @@
 """Regression checks for enabled-but-unbound services, entirely off-device."""
 import json
 import os
+import re
 import subprocess
 import tempfile
 import unittest
@@ -8,6 +9,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 LABEL = 'Service[label=dumbtv home button, feedbackType[FEEDBACK_GENERIC]]'
+# The launcher release this repo ships. The launcher on a TV can be older: up to
+# 1.2 let the TV sleep while an HDMI picture was up.
+RELEASE = re.search(r'^VERSION=(\S+)', (ROOT / 'launcher/version.env').read_text(), re.M).group(1)
 
 
 class VerifyTests(unittest.TestCase):
@@ -21,7 +25,7 @@ class VerifyTests(unittest.TestCase):
                    alarms='min_futurity=0',
                    landed='tv.dumbtv.home/.Home',
                    away='com.amazon.tv.launcher/.ui.MainSettingsActivity',
-                   dnsfilter='0', extra=None):
+                   dnsfilter='0', launcher_package=None, extra=None):
         # Android 14's shape (the fake reports sdk 34): a per-task topResumedActivity=,
         # and the top-level ResumedActivity: after the task list.
         def resumed(app):
@@ -45,6 +49,8 @@ class VerifyTests(unittest.TestCase):
             f'settings --user {user} get secure accessibility_enabled': {'out': enabled},
             'dumpsys accessibility': {'out': dump, 'code': dump_code},
             'pm list packages -d': {'out': ''},
+            'dumpsys package tv.dumbtv.home': {
+                'out': f'    versionName={RELEASE}' if launcher_package is None else launcher_package},
             'settings get secure screensaver_components': {'out': 'null'},
             'am start -a android.intent.action.MAIN -c android.intent.category.LEANBACK_SETTINGS': {'out': ''},
             'input keyevent KEYCODE_HOME': {'out': ''},
@@ -160,6 +166,31 @@ class VerifyTests(unittest.TestCase):
         result, calls = self.run_verify('', launcher='0')
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertFalse(any('accessibility' in ' '.join(c) for c in calls))
+
+    def test_the_launcher_release_on_the_tv_is_reported(self):
+        result, _ = self.run_verify(self.modern(LABEL))
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn('ok         launcher', result.stdout)
+        self.assertIn(RELEASE, result.stdout)
+
+    def test_an_old_launcher_is_a_failure(self):
+        # Releases up to 1.2 let the TV sleep while an HDMI picture was up, and
+        # nothing else on the TV says so.
+        result, _ = self.run_verify(self.modern(LABEL), launcher_package='    versionName=1.2')
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('FAIL       launcher', result.stdout)
+        self.assertIn('run ./scripts/launcher.sh -y', result.stdout)
+
+    def test_a_launcher_newer_than_this_checkout_passes(self):
+        result, _ = self.run_verify(self.modern(LABEL), launcher_package='    versionName=99.0')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn('newer than', result.stdout)
+
+    def test_a_missing_launcher_is_skipped(self):
+        result, _ = self.run_verify(self.modern(LABEL),
+                                    launcher_package='Unable to find package: tv.dumbtv.home')
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn('skip       launcher', result.stdout)
 
     def test_speed_requirement_is_preserved(self):
         result, _ = self.run_verify(self.modern(LABEL), futurity='null')
