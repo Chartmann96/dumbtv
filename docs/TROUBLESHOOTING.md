@@ -111,9 +111,9 @@ in milliseconds.
 The filter app was force-stopped, or its data was cleared. After
 `am force-stop dnsfilter.android` the VPN comes back but DNS no longer goes through
 it. A reboot fixes it; restarting the app does not. Never force-stop it by hand.
-`dnsfilter.sh` stops it once during setup, before it replaces the app's files, and
-reboots straight after; if that run was cut short between the two, reboot the TV
-or run `./scripts/dnsfilter.sh` again.
+`dnsfilter.sh` may stop it once during setup, before it replaces the app's files,
+and reboots straight after (or, when it ends at its manual step, tells you to); if
+that run was cut short, reboot the TV or run `./scripts/dnsfilter.sh` again.
 
 ### Nothing is blocked after a reboot
 
@@ -294,8 +294,8 @@ level and switch to `data/fireos6/` on their own.
   `/sdcard/Android/media/dnsfilter.android/` and types the settings into the app's
   own editor (Advanced settings > Edit configuration file), moving through the app
   with TAB and OK as a remote would, then presses the app's RESTART and waits for
-  it to load the list. Leave the remote alone while it types; it takes under a
-  minute.
+  it to load the list. Leave the remote alone while it types; it takes about two
+  minutes.
 - **Nothing is blocked after `dnsfilter.sh`.** Reboot once and run `verify.sh`.
   If neither way in worked, the script stops at one manual step instead:
   in personalDNSfilter tick Advanced settings, then Configure filter update,
@@ -312,7 +312,7 @@ level and switch to `data/fireos6/` on their own.
   focused field.
 - **The on-screen keyboard swallows keys** while a text field is focused. Batch
   deletes into one call (`input keyevent 67 67 67`), and close the keyboard with
-  BACK before tapping another field.
+  BACK before moving to another control.
 - **The launcher's own folder is closed to adb too,** so `home.conf` and the
   wallpapers cannot be pushed to `/sdcard/Android/data/tv.dumbtv.home/files/`.
   Write them to `/sdcard/Android/media/tv.dumbtv.home/` instead: the launcher reads

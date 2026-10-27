@@ -216,7 +216,7 @@ push_to_media() {
 # text already there. A list file with a new name gives the app a new URL, which it loads
 # when its RESTART is pressed.
 configure_in_app() {
-  local name entries line i lines=()
+  local name entries line i nodes lines=()
   name=dumbtv-blocklist-$(date +%s).txt
   push_to_media "$name" || { note "could not put the list in $MEDIA"; return 1; }
   entries=$(grep -c . "$LIST")
@@ -226,12 +226,22 @@ configure_in_app() {
     "filterAutoUpdateURL_IDs = dumbtv" "filterAutoUpdateURL_categories = dumbtv"
     "filterAutoUpdateURL_switchs = true")
   [[ $FILTER_AUTOSTART == 0 ]] && lines+=("AUTOSTART = false")
-  note "typing the settings into personalDNSfilter's config editor (keep the remote down)"
-  dev "am start -n $PKG/.DNSProxyActivity" >/dev/null 2>&1
-  for i in $(seq 1 15); do
-    ui_node advancedConfigCheck >/dev/null && break
-    sleep 2
+  note "typing the settings into personalDNSfilter's config editor; leave the remote alone (about two minutes)"
+  # Right after a first start the app's screen can stay unreadable to uiautomator ("null
+  # root node") until another window has been in front; HOME and a new start clear it.
+  for i in 1 2 3; do
+    [[ $i -gt 1 ]] && dev input keyevent KEYCODE_HOME >/dev/null && sleep 2
+    dev "am start -n $PKG/.DNSProxyActivity" >/dev/null 2>&1
+    sleep 3
+    nodes=$(ui_nodes) || continue
+    [[ $nodes == *':id/advancedConfigCheck"'* || $nodes == *':id/closeInfoPopupBtn"'* ]] && break
   done
+  # A fresh install opens the app's info dialog first, and it holds the focus until closed.
+  if [[ -n $(ui_node closeInfoPopupBtn) ]]; then
+    ui_tick disableInfoPopUp
+    ui_press closeInfoPopupBtn
+    sleep 2
+  fi
   ui_tick advancedConfigCheck && ui_tick manuallyEditConfChk && ui_focus manuallyEditField || {
     note "could not reach the app's config editor"
     return 1

@@ -12,10 +12,12 @@ ROOT = Path(__file__).resolve().parents[1]
 VIEWS = 'dnsField advancedConfigCheck enableAddFilter startBtn logOutput'
 
 
-def run(script, views=VIEWS, backup='Backup Manager is enabled / provisioned / not pending init'):
+def run(script, views=VIEWS, backup='Backup Manager is enabled / provisioned / not pending init',
+        failed_dumps=0, checked=''):
     with tempfile.TemporaryDirectory() as tmp:
         env = dict(os.environ, ADB=str(ROOT / 'tests' / 'fake_screen_adb.py'), SERIAL='test-tv',
-                   FAKE_DIR=tmp, VIEWS=views, BACKUP_FIRST_LINE=backup)
+                   FAKE_DIR=tmp, VIEWS=views, BACKUP_FIRST_LINE=backup,
+                   FAILED_DUMPS=str(failed_dumps), CHECKED=checked)
         result = subprocess.run(
             ['bash', '-c', 'set -uo pipefail; source scripts/lib.sh; source scripts/appdata.sh; '
              'source scripts/appui.sh; ' + script + '; echo "rc=$?"'],
@@ -41,6 +43,18 @@ class FocusTest(unittest.TestCase):
         out, log = run('ui_tick advancedConfigCheck && ui_tick advancedConfigCheck && ui_checked advancedConfigCheck')
         self.assertIn('rc=0', out)
         self.assertEqual(log.count('input keyevent KEYCODE_DPAD_CENTER'), 1)
+
+    def test_a_busy_screen_is_read_again_before_any_key(self):
+        # Four blind TABs would carry the focus past startBtn and round the loop again.
+        out, log = run('ui_press startBtn', failed_dumps=4)
+        self.assertIn('rc=0', out)
+        self.assertEqual(log.count('input keyevent KEYCODE_TAB'), 3)
+
+    def test_an_unreadable_screen_presses_nothing(self):
+        # A ticked box read as unticked would be pressed, and so unticked.
+        out, log = run('ui_tick advancedConfigCheck', failed_dumps=99, checked='advancedConfigCheck')
+        self.assertIn('rc=1', out)
+        self.assertFalse(any(line.startswith('input keyevent') for line in log))
 
     def test_typed_spaces_survive_input_text(self):
         _, log = run('ui_type "routeIPs = 198.51.100.1; 2001:db8::1"')
