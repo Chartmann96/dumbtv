@@ -29,12 +29,15 @@ Website: [dumbtv.org](https://dumbtv.org). Logos and screenshots are in
 - [CBC News](https://www.cbc.ca/news/world/ai-coding-hack-smart-tvs-9.7392179) (Canada)
 - [TechRadar](https://www.techradar.com/entertainment/streaming/your-tv-should-do-what-you-paid-for-people-are-vibe-coding-apps-to-banish-ads-from-their-smart-tvs-and-android-tv-and-its-catching-on): "Your TV should do what you paid for" ([Yahoo](https://tech.yahoo.com/home-entertainment/tvs/articles/tv-paid-people-sick-ads-223000305.html))
 - [PCWorld](https://www.pcworld.com/article/3266473/please-dont-use-ai-hacks-to-debloat-your-tv.html): Please don't use AI hacks to debloat your TV
-- [PCMag](https://uk.pcmag.com/tvs/168078/you-dont-need-ai-to-dumb-down-your-smart-tv-do-this-instead): You don't need AI to dumb down your smart TV
+- [PCMag](https://uk.pcmag.com/tvs/168078/you-dont-need-ai-to-dumb-down-your-smart-tv-do-this-instead): You don't need AI to dumb down your smart TV ([Yahoo](https://tech.yahoo.com/home-entertainment/articles/don-t-ai-dumb-down-130000468.html))
 - [Tom's Guide](https://www.tomsguide.com/ai/people-are-using-ai-to-turn-their-smart-tvs-into-dumb-tvs-and-you-might-want-to-do-the-same)
 - [Gizmodo](https://gizmodo.com/people-using-ai-to-make-smart-tvs-dumb-again-is-the-most-2026-thing-ever-2000828213)
+- [Mashable](https://mashable.com/tech/smart-tv-ads-claude-code-ai-cleanup): Smart TV owners have found a new use for AI
 - [XDA Developers](https://www.xda-developers.com/people-are-now-vibe-coding-their-smart-tvs-to-strip-them-of-ads-and-unwanted-features/)
 - [Pocket-lint](https://www.pocket-lint.com/hacking-your-smart-tv-may-not-be-the-best-solution-for-removing-bloatware/): Don't rush to de-bloat your TV with AI just yet
-- [ExtremeTech](https://www.extremetech.com/electronics/developers-are-dumbing-down-their-smart-tvs)
+- [Pocket-lint](https://www.pocket-lint.com/why-people-are-ironically-using-ai-to-make-their-smart-tvs-dumb/): AI tech can now remove ads and bloatware from your TV
+- [ExtremeTech](https://www.extremetech.com/electronics/developers-are-dumbing-down-their-smart-tvs) ([Yahoo](https://tech.yahoo.com/home-entertainment/articles/developers-dumbing-down-smart-tvs-193056269.html))
+- [TFTC](https://www.tftc.io/ai-hacking-smart-tvs-remove-spyware): People are using AI to rip the spyware out of their TVs
 - [Decrypt](https://decrypt.co/381456/vibe-coding-ads-out-smart-tvs-heres-how)
 - [Yahoo Tech](https://tech.yahoo.com/ai/article/sick-of-seeing-ads-and-clutter-on-your-smart-tv-the-internet-says-ai-can-fix-that-181417392.html)
 - [It's FOSS](https://itsfoss.com/news/debloat-smart-tv/)
@@ -49,6 +52,7 @@ Website: [dumbtv.org](https://dumbtv.org). Logos and screenshots are in
 - [Vietnam.vn](https://www.vietnam.vn/en/dung-claude-de-giai-cuu-ti-vi-cu) (Vietnam)
 - [Nyongesa Sande](https://www.nyongesasande.com/ai-smart-tv-hacks-remove-ads-and-simplify-home-screens/) (Kenya)
 - [Mezha](https://mezha.ua/en/news/from-smartv-to-dumbtv-316344/) (Ukraine)
+- [Metla](https://metla.mk/en/news/smart-tvs-ads-ai/) (North Macedonia)
 - [Mediasat](https://mediasat.info/en/2026/10/20/smart-tv-owners-turn-to-claude-code-to-remove-ads/)
 - [Blockonomi](https://blockonomi.com/smart-tv-owners-use-claude-code-to-remove-ads-and-tracking-software)
 - [LockerGnome](https://lockergnome.com/vibe-coding-the-ads-off-smart-tvs/)
@@ -74,6 +78,12 @@ Website: [dumbtv.org](https://dumbtv.org). Logos and screenshots are in
   [The Solo Toolbox](https://thesolotoolbox.com/turn-off-acr-smart-tv2/),
   [AI Daily](https://daily.rclabs.in/i/developers-are-using-ai-to-strip-ads-and-tracking-from-smart-tvs-1c5ffb),
   [Ayoub Kada](https://www.ayoubka.com/post/best-ai-creations-this-week-2026-10-23)
+- [GSMDome](https://www.gsmdome.com/developers-are-using-ai-and-adb-to-strip-down-smart-tv-interfaces),
+  [Streakshot](https://www.streakshot.com/entertainment/ai-smart-tv-debloating-claude-code-remove-ads),
+  [Time News](https://time.news/smart-tv-owners-use-ai-tools-to-remove-bloatware-and-ads),
+  [The Brief](https://thebrief.news/en/standard/article/33931/ai-prompts-are-turning-smart-tvs-simple-again),
+  [Bizstack](https://bizstack.tech/vibe-coded-tv-debloat-tools-remove-ads-and-tracking-on-android-tvs/),
+  [TechMeridian](https://techmeridian.news/events/2209?lang=en)
 
 ## Spanish
 
@@ -82,20 +92,24 @@ Website: [dumbtv.org](https://dumbtv.org). Logos and screenshots are in
 - [Ecosistema Startup](https://ecosistemastartup.com/dumbtv-el-hack-con-ia-que-elimina-los-anuncios-del-tv/)
 - [ENTER.CO](https://www.enter.co/chips-bits/como-volver-tonto-smart-tv-ia-anuncios/) (Colombia)
 - [Cadena 3](https://www.cadena3.com/noticia/tecnologia/el-auge-de-los-hacks-de-ia-para-convertir-televisores-inteligentes-en-modelos-simples_604870) (Argentina)
+- [El Mundo](https://elmundo.com.bo/la-inteligencia-artificial-ayuda-a-eliminar-anuncios-y-aplicaciones-innecesarias-de-los-televisores-inteligentes/) (Bolivia)
 - [DiarioBitcoin](https://www.diariobitcoin.com/tecnologia/usuarios-usan-ia-para-quitar-anuncios-y-bloatware-de-sus-televisores-inteligentes/),
   [Las Noticias de la IA](https://lasnoticiasdelaia.com/desarrolladores-utilizan-inteligencia-artificial-para-simplificar-televisores-inteligentes/),
   [Qore](https://www.qore.com/tecnologia/desarrolladores-usan-ia-para-quitar-anuncios-de-smart-tvs/)
 
 ## Portuguese
 
-- [Showmetech](https://www.showmetech.com.br/ia-remover-anuncios-smart-tvs-vibe-coding/) (Brazil)
+- [Showmetech](https://www.showmetech.com.br/ia-remover-anuncios-smart-tvs-vibe-coding/),
+  [Hardware.com.br](https://www.hardware.com.br/noticias/usuarios-usam-ia-para-remover-anuncios-e-rastreamento-de-smart-tvs/),
+  [Minha Operadora](https://www.minhaoperadora.com.br/2026/10/limpe-sua-smart-tv-utilizando-ia-e-despache-os-anuncios-e-a-lentidao.html) (Brazil)
 - [Mixvale](https://www.mixvale.com.br/2026/10/21/usuarios-usam-o-agente-de-ia-claude-code-para-limpar-smart-tvs/),
   [Boa Informação](https://boainformacao.com.br/2026/10/as-pessoas-estao-usando-ia-para-tornar-suas-smart-tvs-burras-novamente/),
   [TechDescomplicado](https://techdescomplicado.com.br/como-tirar-anuncios-da-tv/),
   [Antihype](https://antihype.com.br/c/ia/agentes-ia-removem-anuncios-smart-tv/)
 - [TugaTech](https://tugatech.com.pt/t92999-utilizadores-estao-a-usar-ia-para-tornar-as-suas-smart-tvs-mais-estupidas-e-remover-publicidade),
   [Techbit](https://techbit.pt/fartou-anuncios-tv-pais-pediu-claude-code-limpar/),
-  [MEGAzine](https://megazine.pt/gadgets/anuncios-no-ecra-da-tv-o-que-o-google-tv-te-deixa-esconder-e-o-que-fazem-as) (Portugal)
+  [MEGAzine](https://megazine.pt/gadgets/anuncios-no-ecra-da-tv-o-que-o-google-tv-te-deixa-esconder-e-o-que-fazem-as),
+  [4gnews](https://4gnews.pt/estas-ferramentas-de-ia-prometem-acabar-com-os-anuncios-das-smart-tvs/) (Portugal)
 
 ## French
 
@@ -113,15 +127,19 @@ Website: [dumbtv.org](https://dumbtv.org). Logos and screenshots are in
 - [WinFuture](https://winfuture.de/news,162070.html)
 - [IT Boltwise](https://www.it-boltwise.de/ki-entruempelt-smart-tvs-tools-fuer-werbefreiheit-und-weniger-daten.html),
   [4K Filme](https://www.4kfilme.de/nutzer-befreit-smart-tv-mit-ki-von-werbund-und-wird-gefeiert/)
+- [MacUser.de](https://www.macuser.de/threads/fire-tv-android-tv-tracking-und-werbung-entfernen-mit-dumbtv.971809/): a step-by-step dumbtv guide in the forum
 
 ## Dutch and Swedish
 
 - [Keek.be](https://www.keek.be/nieuws/tv-zonder-reclame/) (Belgium)
-- [AIMonkey](https://www.aimonkey.se/artiklar/ai-gor-smart-tv-dum-igen) (Sweden)
+- [TechRadar Nederland](https://global.techradar.com/nl-nl/entertainment/streaming/mensen-maken-gebruik-van-vibe-coding-om-advertenties-van-hun-smart-tvs-te-verbannen) (Netherlands)
+- [SweClockers](https://www.sweclockers.com/nyhet/43315-ai-kod-gor-smart-tv-dum),
+  [AIMonkey](https://www.aimonkey.se/artiklar/ai-gor-smart-tv-dum-igen) (Sweden)
 
 ## Italian
 
-- [Smartworld](https://www.smartworld.it/news/smart-tv-senza-pubblicita-tracciamento-script-ai-adb.html),
+- [TuttoAndroid](https://www.tuttoandroid.net/news/2026/10/20/hackerare-smart-tv-ai-eliminare-pubblicita-app-1178472/),
+  [Smartworld](https://www.smartworld.it/news/smart-tv-senza-pubblicita-tracciamento-script-ai-adb.html),
   [Macitynet](https://www.macitynet.it/rendere-le-tv-meno-smart/),
   [TechPrincess](https://techprincess.it/smart-tv-ai-rimuovere-pubblicita-app-inutili/),
   [TecnoAndroid](https://www.tecnoandroid.it/news/smart-tv-senza-pubblicita-claude-code-elimina-il-bloatware-1998676/),
@@ -131,7 +149,8 @@ Website: [dumbtv.org](https://dumbtv.org). Logos and screenshots are in
 ## Russian, Ukrainian and Belarusian
 
 - [iXBT](https://www.ixbt.com/news/2026/10/20/poleznyi-vaibkoding-deepseek-i-claude-sdelali-prilozeniia-kotorye-ubiraiut-s-televizorov-reklamu-i-nenuznye-prilozeniia.html) (Russia)
-- [Onliner](https://tech.onliner.by/2026/10/20/kak-uluchshit-televizor-s-pomoshhyu-ii) (Belarus)
+- [Onliner](https://tech.onliner.by/2026/10/20/kak-uluchshit-televizor-s-pomoshhyu-ii),
+  [dev.by](https://devby.io/news/razraby-delaut-televizory-tupymi-chtoby-izbavitsya-ot-reklamy-i-slezhki) (Belarus)
 - [UNIAN](https://www.unian.net/techno/neiroseti/v-seti-novyy-trend-polzovateli-prevrashchayut-svoi-umnye-televizory-v-obychnye-13534713.html) (Ukraine)
 - [Hightech.plus](https://hightech.plus/2026/10/20/vladelci-umnih-televizorov-s-pomoshyu-claude-izbavlyayutsya-ot-reklami-i-slezhki),
   [kod.ru](https://kod.ru/people-are-using-ai-smart-tvs-dumb),
@@ -139,6 +158,7 @@ Website: [dumbtv.org](https://dumbtv.org). Logos and screenshots are in
   [Runet](https://runet.news/news/84747),
   [AdIndex](https://adindex.ru/news/tendencies/2026/10/20/350100.phtml),
   [REGIONS.RU](https://regions.ru/bezopasnost/vash-televizor-slishkom-umnyj-kak-otkljuchit-reklamu-i-slezhku-s-pomoschju-ii),
+  [SecurityLab](https://www.securitylab.ru/blog/personal/xiaomite-journal/363222.php),
   [Mezha](https://mezha.ua/news/from-smartv-to-dumbtv-316344/)
 
 ## Central and Eastern Europe
@@ -150,6 +170,7 @@ Website: [dumbtv.org](https://dumbtv.org). Logos and screenshots are in
 - [Gamesite.sk](https://gamesite.zoznam.sk/zmenili-vas-televizor-na-reklamnu-plochu-vyvojari-si-vdaka-ai-pripravili-nastroje-ktore-tomu-zabrania/) (Slovakia)
 - [AI Forradalom](https://aiforradalom.hu/alkalmazasok/ai-ugynokok-tisztitjak-meg-a-teveket-a-reklamoktol-es-a-felesleges-szoftverektol) (Hungary)
 - [Playtech.ro](https://playtech.ro/2026/oamenii-folosesc-inteligenta-artificiala-ca-sa-scape-de-reclamele-de-pe-smart-tv-claude-code-poate-transforma-un-televizor-lent-intr-unul-mult-mai-rapid/) (Romania)
+- [Kaldata](https://www.kaldata.com/it-%d0%bd%d0%be%d0%b2%d0%b8%d0%bd%d0%b8/%d0%b8%d0%b7%d0%ba%d1%83%d1%81%d1%82%d0%b2%d0%b5%d0%bd-%d0%b8%d0%bd%d1%82%d0%b5%d0%bb%d0%b5%d0%ba%d1%82/%d1%81-%d0%bf%d0%be%d0%bc%d0%be%d1%89%d1%82%d0%b0-%d0%bd%d0%b0-ai-%d0%bc%d0%be%d0%b6%d0%b5-%d0%b4%d0%b0-%d1%81%d0%b5-%d0%be%d1%82%d1%8a%d1%80%d0%b2%d0%b5%d1%82%d0%b5-%d0%be%d1%82-%d1%80%d0%b5%d0%ba-715959.html) (Bulgaria)
 
 ## Greek and Turkish
 
@@ -163,12 +184,15 @@ Website: [dumbtv.org](https://dumbtv.org). Logos and screenshots are in
 
 - [3arrafni](https://3arrafni.com/tech-news/ai-tools-remove-smart-tv-ads-tracking),
   [TechVoice Arabia](https://techvoicearabia.com/claude-code-smart-tv-ads-tracking-clean-your-tv/)
+- [Youm7](https://www.youm7.com/story/2026/10/22/%d8%a7%d9%84%d8%b0%d9%83%d8%a7%d8%a1-%d8%a7%d9%84%d8%a7%d8%b5%d8%b7%d9%86%d8%a7%d8%b9%d9%8a-%d9%8a%d8%b3%d8%a7%d8%b9%d8%af-%d8%a7%d9%84%d9%85%d8%b3%d8%aa%d8%ae%d8%af%d9%85%d9%8a%d9%86-%d8%b9%d9%84%d9%89-%d8%ad%d8%b0%d9%81-%d8%a5%d8%b9%d9%84%d8%a7%d9%86%d8%a7%d8%aa-%d8%a7%d9%84%d8%aa%d9%84%d9%81%d8%b2%d9%8a%d9%88%d9%86-%d8%a7%d9%84%d8%b0%d9%83%d9%8a%d8%a9/7586888) (Egypt)
 
 ## Asian languages
 
 - [IT之家](https://www.ithome.com/1/015/598.htm), syndicated by [Sina Finance](https://finance.sina.com.cn/tech/digi/2026-10-20/doc-inivwyqy0896637.shtml),
   [NetEase](https://www.163.com/dy/article/L9NHKE8N0511B8LM.html) and
   [iFeng](https://tech.ifeng.com/c/8xNzUAQZMqQ)
+- [至顶网](https://www.zhiding.cn/edge-ai/2026/1021/3203032.shtml),
+  [品玩 PingWest](https://www.pingwest.com/w/318546)
 - [Yam](https://n.yam.com/Article/20261020173220) (Taiwan)
 - [觉醒AI知识库](https://www.jxxy.net/ai/articles/rss-dumbtv-ai-clean-smart-tv-2026-10-21/),
   [Sipply](https://www.sipply.dev/zh/story/developers-launch-ai-tools-to-simplify-smart-tvs-by-removing-e78eb3ec)
@@ -178,6 +202,11 @@ Website: [dumbtv.org](https://dumbtv.org). Logos and screenshots are in
   [and-and.dev](https://and-and.dev/blog/claude-code-cleanyourtv-dumbtv-smart-tv-ads-strip-2026/) (Japan)
 - [TekCafe](https://tekcafe.vn/cap-nhat/phan-mem/dung-ai-don-quang-cao-tren-smart-tv-de-ra-lenh-hon-chua-chac-an-toan-hon/) (Vietnam)
 - [Oossa](https://oossa.com/hi/ai-tools-let-users-strip-ads-and-bloatware-from-smart-tvs) (Hindi)
+
+## Video
+
+- [AI Inside](https://www.youtube.com/watch?v=vUfdRl6ASYY): Jason Howell and Jeff Jarvis on AI agents stripping ads from smart TVs
+- [Nohumans](https://www.youtube.com/watch?v=mYdDj3tXqFA): Killing TV ads with Claude Code
 
 ## On X
 
