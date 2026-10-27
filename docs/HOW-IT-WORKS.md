@@ -77,7 +77,9 @@ downloads a list itself, so it cannot end up with a half-written one.
 Three settings keep the filter in the path:
 
 - `routeIPs = <gateway>` puts the router's resolver inside the tunnel, so an app
-  that asks the router directly is still filtered.
+  that asks the router directly is still filtered. On Fire OS 6, any other DNS
+  server the TV reports (`net.dns1` to `net.dns4`, IPv6 ones included) goes in
+  too. Fire OS 7 and 8 do not report them there.
 - `detectDNS = false` with an explicit `fallbackDNS` stops the filter falling out
   of the path when the TV changes network. That fallback is the router. Set
   `DNS_UPSTREAM` in `dumbtv.conf` only when those unknown names should go to

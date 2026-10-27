@@ -113,11 +113,37 @@ list. A resolver that serves its own blocklist also blocks names dumbtv's list
 leaves alone, and taking a host out of `extra-hosts.txt` does not bring those
 back.
 
+### Blocked hosts resolve again a few minutes after a reboot
+
+Seen on Fire OS 6 on networks with IPv6 (an eero router, for one). Right after boot
+everything is blocked, then once the TV gets its IPv6 address `verify.sh` shows
+blocked hosts resolving to public addresses. The router handed the TV an IPv6 DNS
+server, or the TV has a second resolver in `net.dns2`, and lookups to it went
+around the tunnel. Check what the TV uses:
+
+```sh
+for p in net.dns1 net.dns2 net.dns3 net.dns4; do adb shell getprop $p; done
+```
+
+On Fire OS 6, `dnsfilter.sh` routes every server listed there into the tunnel along
+with the gateway; the plan step prints them as `also routed`. It routes what the TV
+reports while it runs, so:
+
+- Run it a few minutes after the TV has booted, once an IPv6 server shows up in the
+  list above. If it runs too early, it misses that server.
+- An IPv6 DNS address usually carries the prefix your provider hands out. If the
+  leak comes back later, the prefix may have changed: check the list again and run
+  `./scripts/dnsfilter.sh` again.
+
+Fire OS 7 and 8 leave `net.dns1` to `net.dns4` empty, so there this step adds
+nothing and only the gateway is routed.
+
 ### The filter stopped working after the TV changed network
 
 The config pins `detectDNS = false`, an explicit `fallbackDNS` and
-`routeIPs = <gateway>`. If the TV moved to a network with a different router, run
-`./scripts/dnsfilter.sh` again so those point at the new one.
+`routeIPs = <gateway>`, plus the DNS servers the TV reported at setup. If the TV
+moved to a network with a different router, run `./scripts/dnsfilter.sh` again so
+those point at the new one.
 
 ### The block list is nearly empty
 

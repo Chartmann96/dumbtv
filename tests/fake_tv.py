@@ -29,6 +29,12 @@ if args[:1] == ['disconnect']:
 if args[-1:] == ['get-state']:
     print('device')
     sys.exit(0)
+if len(args) == 5 and args[0] == '-s' and args[2] == 'push' and 'pushed' in state:
+    # Keeps a copy of each pushed file, so a test can read what reached the TV.
+    Path(state['pushed']).mkdir(parents=True, exist_ok=True)
+    Path(state['pushed'], Path(args[4]).name).write_bytes(Path(args[3]).read_bytes())
+    print(f'{args[3]}: 1 file pushed')
+    sys.exit(0)
 if len(args) < 3 or args[0] != '-s' or args[2] != 'shell':
     sys.exit(91)
 
@@ -97,6 +103,10 @@ elif command == 'getprop ro.product.manufacturer':
     print('Amazon')
 elif command == 'getprop sys.boot_completed':
     print(1)
+elif words[:1] == ['getprop'] and len(words) == 2 and words[1] in state.get('props', {}):
+    print(state['props'][words[1]])
+elif command == 'ip route show table all' and 'routes' in state:
+    print(state['routes'])
 elif command == 'cmd package help':
     print('Package manager (package) commands:\n  path [--user USER_ID] PACKAGE')
 elif words[:2] == ['pm', 'path']:
@@ -127,6 +137,8 @@ elif words[:4] == ['pm', 'uninstall', '--user', '0']:
     print('Success')
 elif words[:2] == ['dumpsys', 'package']:
     print('    userId=10050')
+    if words[2:] and words[2] in state.get('versions', {}):
+        print(f"    versionCode={state['versions'][words[2]]} minSdk=21 targetSdk=29")
 elif command == 'ps -A -o NAME':
     print('NAME')
 elif command == 'dumpsys activity activities':
