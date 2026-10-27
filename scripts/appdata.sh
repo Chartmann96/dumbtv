@@ -24,6 +24,16 @@ app_data_archive() {
 
 restore_count() { dev 'logcat -d -s BackupManagerService' | grep -cE "$1"; }
 
+# adb restore does nothing, silently, unless Android's backup service runs for the user. Some
+# Fire OS 8 builds leave it out ("Can't find service: backup") or keep it "Inactive", and only
+# a system app can switch it on. "Backup Manager is disabled" still restores: that switch is
+# for scheduled backups.
+backup_active() {
+  local first
+  first=$(dev 'dumpsys backup' | head -1 | tr -d '\r')
+  [[ $first == "Backup Manager is "* ]]
+}
+
 # restore_app_data ARCHIVE
 # Runs `adb restore` and answers the TV's confirmation by tapping "Restore my data" where a
 # uiautomator dump places it. Keys are the second try: the dialog's password field keeps any

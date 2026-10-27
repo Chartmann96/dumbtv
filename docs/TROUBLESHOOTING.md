@@ -108,10 +108,12 @@ in milliseconds.
 
 ### Nothing is blocked, but a `tun` interface is up
 
-The filter app was force-stopped. After `am force-stop dnsfilter.android` the VPN
-comes back but DNS no longer goes through it. A reboot fixes it; restarting the app
-does not. Never force-stop it. `dnsfilter.sh` stops it once during setup and
-reboots straight after.
+The filter app was force-stopped, or its data was cleared. After
+`am force-stop dnsfilter.android` the VPN comes back but DNS no longer goes through
+it. A reboot fixes it; restarting the app does not. Never force-stop it by hand.
+`dnsfilter.sh` stops it once during setup, before it replaces the app's files, and
+reboots straight after; if that run was cut short between the two, reboot the TV
+or run `./scripts/dnsfilter.sh` again.
 
 ### Nothing is blocked after a reboot
 
@@ -131,8 +133,8 @@ there.
 `DNS_UPSTREAM` in `dumbtv.conf` is a space-separated list of resolver IPs, asked
 on port 53 over UDP (DNS over TLS or HTTPS is not supported). The filter still
 blocks its own list, and forwards everything else to those resolvers instead of
-the router. On Fire OS 8 it reaches the app through the `adb restore` setup
-(see "Fire OS 8" below), not through the manual fallback.
+the router. On Fire OS 8 it reaches the app through the `adb restore` setup or the
+typed config (see "Fire OS 8" below), not through the manual fallback.
 
 ```sh
 ./scripts/configure.sh --dns-upstream "76.76.2.45 76.76.10.45"
@@ -285,8 +287,17 @@ level and switch to `data/fireos6/` on their own.
   "Restore my data?" and the script answers it with remote keys; if that fails,
   press RESTORE MY DATA yourself within a minute. A TV with a backup password
   set wants it typed into that screen.
+- **"this TV's backup service is off".** Some builds leave Android's backup
+  service out or inactive (`adb shell dumpsys backup | head -1` prints `Inactive`
+  or `Can't find service`), and then `adb restore` does nothing. Only a system app
+  can switch it on. The script then puts the list in
+  `/sdcard/Android/media/dnsfilter.android/` and types the settings into the app's
+  own editor (Advanced settings > Edit configuration file), moving through the app
+  with TAB and OK as a remote would, then presses the app's RESTART and waits for
+  it to load the list. Leave the remote alone while it types; it takes under a
+  minute.
 - **Nothing is blocked after `dnsfilter.sh`.** Reboot once and run `verify.sh`.
-  If the restore could not be used, the script stops at one manual step instead:
+  If neither way in worked, the script stops at one manual step instead:
   in personalDNSfilter tick Advanced settings, then Configure filter update,
   untick every list, press the edit button on the last row (named `<new>`), set
   the URL to
@@ -294,10 +305,11 @@ level and switch to `data/fireos6/` on their own.
   (three slashes), tick Active, OK, and reboot. There is no add button: the
   `<new>` row is how an entry is added.
 - **The app's screen will not move with the remote.** It is a phone layout
-  letterboxed on the TV. Drive it over adb: `adb shell uiautomator dump` gives
-  each control's bounds, `adb shell input tap X Y` presses it, and
-  `adb shell input text` types into a field (close the keyboard with
-  `adb shell input keyevent KEYCODE_BACK` before the next tap).
+  letterboxed on the TV, and on some TVs it ignores `input tap` too. TAB moves
+  through every control in a fixed order: `adb shell input keyevent KEYCODE_TAB`
+  until `adb shell uiautomator dump` shows `focused="true"` on the one you want,
+  then `KEYCODE_DPAD_CENTER` presses it, and `adb shell input text` types into a
+  focused field.
 - **The on-screen keyboard swallows keys** while a text field is focused. Batch
   deletes into one call (`input keyevent 67 67 67`), and close the keyboard with
   BACK before tapping another field.

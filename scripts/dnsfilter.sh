@@ -5,6 +5,7 @@
 set -uo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 source "$ROOT/scripts/appdata.sh"
+source "$ROOT/scripts/appui.sh"
 parse_flags "$@"
 need_device
 load_conf
@@ -30,6 +31,7 @@ CONF_OUT=$WORK/dnsfilter.conf
 RAW=$WORK/hagezi.txt
 LIST=$WORK/blocklist.txt
 DIR=/sdcard/Android/data/$PKG/files/PersonalDNSFilter
+MEDIA=/sdcard/Android/media/$PKG
 
 GW=$(gateway)
 [[ -n $GW ]] || die "could not read the default gateway from 'ip route'"
@@ -173,10 +175,8 @@ fi
 # the app's data and unpacks the files as the app.
 restore_into_app() {
   local data=$WORK/appdata/PersonalDNSFilter
-  # Some Fire OS 8 builds (8.1.8.5, RS8185.3885N on a ginza set) ship without the backup
-  # service: `bu` logs "Can't obtain Backup Manager binder" and adb restore returns at once.
-  if dev "service check backup" 2>/dev/null | grep -q 'not found'; then
-    note "this firmware has no backup service, so adb restore cannot carry the config in"
+  if ! backup_active; then
+    note "this TV's backup service is off, so adb restore cannot carry the config in"
     return 1
   fi
   mkdir -p "$data"
@@ -199,15 +199,63 @@ restore_into_app() {
   restore_app_data "$WORK/appdata.ab"
 }
 
-# The fallback when the restore cannot be used: the list goes to Android/media, which adb
-# can still write, and the app is pointed at it from its own screen.
-manual_steps() {
-  local media=/sdcard/Android/media/$PKG
-  dev "mkdir -p $media" >/dev/null 2>&1
+# Android/media is the one place adb can write that the app can read. The list goes there and
+# the app loads it from a file:// URL.
+push_to_media() {
+  dev "mkdir -p $MEDIA; rm -f $MEDIA/dumbtv-blocklist*.txt" >/dev/null 2>&1
   # Without these the app's file import writes an empty list and says nothing.
   dev "pm grant $PKG android.permission.READ_EXTERNAL_STORAGE" >/dev/null 2>&1
   dev "pm grant $PKG android.permission.WRITE_EXTERNAL_STORAGE" >/dev/null 2>&1
-  "$ADB" -s "$SERIAL" push "$LIST" "$media/dumbtv-blocklist.txt" | tail -1 || die "push to $media failed"
+  "$ADB" -s "$SERIAL" push "$LIST" "$MEDIA/$1" | tail -1
+  [[ $(dev1 "grep -c . $MEDIA/$1") == "$(grep -c . "$LIST")" ]]
+}
+
+# When adb restore is not available: the settings are typed into the app's own config editor
+# (Advanced settings > Edit configuration file). Pressing BACK saves it, merged over the app's
+# defaults with the last copy of a key winning, so only the changed keys are typed, after the
+# text already there. A list file with a new name gives the app a new URL, which it loads
+# when its RESTART is pressed.
+configure_in_app() {
+  local name entries line i lines=()
+  name=dumbtv-blocklist-$(date +%s).txt
+  push_to_media "$name" || { note "could not put the list in $MEDIA"; return 1; }
+  entries=$(grep -c . "$LIST")
+  lines=("detectDNS = false" "fallbackDNS = ${upstream:-[$GW]::53::UDP}" "routeIPs = $ROUTES"
+    "routeUnderlyingDNS = true" "reloadIntervalDays = 3650" "filterHostsFile = FILTERHOSTS.TXT"
+    "filterAutoUpdateURL = file:///storage/emulated/0/Android/media/$PKG/$name"
+    "filterAutoUpdateURL_IDs = dumbtv" "filterAutoUpdateURL_categories = dumbtv"
+    "filterAutoUpdateURL_switchs = true")
+  [[ $FILTER_AUTOSTART == 0 ]] && lines+=("AUTOSTART = false")
+  note "typing the settings into personalDNSfilter's config editor (keep the remote down)"
+  dev "am start -n $PKG/.DNSProxyActivity" >/dev/null 2>&1
+  for i in $(seq 1 15); do
+    ui_node advancedConfigCheck >/dev/null && break
+    sleep 2
+  done
+  ui_tick advancedConfigCheck && ui_tick manuallyEditConfChk && ui_focus manuallyEditField || {
+    note "could not reach the app's config editor"
+    return 1
+  }
+  # PAGE_DOWN moves the cursor without leaving the field, as DPAD_DOWN does on the last line.
+  dev input keyevent $(printf 'KEYCODE_PAGE_DOWN %.0s' $(seq 1 40)) KEYCODE_MOVE_END KEYCODE_ENTER >/dev/null
+  for line in "${lines[@]}"; do
+    ui_type "$line"
+    dev input keyevent KEYCODE_ENTER >/dev/null
+  done
+  dev input keyevent KEYCODE_BACK >/dev/null
+  sleep 2
+  ui_press startBtn || { note "could not press the app's RESTART"; return 1; }
+  for i in $(seq 1 30); do
+    [[ $(ui_node logOutput) == *"Building index for $entries entries"* ]] && return 0
+    sleep 2
+  done
+  note "the app did not load the list after RESTART"
+  return 1
+}
+
+# The last fallback: the app is pointed at the list from its own screen, by a person.
+manual_steps() {
+  push_to_media dumbtv-blocklist.txt || die "push to $MEDIA failed"
   acmd settings put secure always_on_vpn_app $PKG >/dev/null
   step "one manual step ($(fireos_name) hides the app's files from adb)"
   note "the blocklist is on the TV; point personalDNSfilter at it once:"
@@ -247,6 +295,10 @@ if [[ $DRY_RUN == 0 ]]; then
       # Doze exemption are kept outside that data; setting them again costs nothing.
       acmd appops set $PKG ACTIVATE_VPN allow >/dev/null
       acmd dumpsys deviceidle whitelist +$PKG >/dev/null
+    elif configure_in_app; then
+      restored=1
+      note "the app loaded the list ($(grep -c . "$LIST") entries) from $MEDIA"
+      dev input keyevent KEYCODE_HOME >/dev/null
     else
       note "the restore did not go through"
       manual_steps
@@ -333,7 +385,7 @@ if [[ $fail == 1 ]]; then
     note "fix it, add FILTER_AUTOSTART=0 to dumbtv.conf and run this script again"
   fi
   if [[ $restored == 1 ]]; then
-    note "the config went in by adb restore; if a reboot does not fix it, see \"Fire OS 8\" in docs/TROUBLESHOOTING.md"
+    note "the config went in without adb push; if a reboot does not fix it, see \"Fire OS 8\" in docs/TROUBLESHOOTING.md"
   fi
   exit 1
 fi
