@@ -64,10 +64,20 @@ Undo: `./launcher/install.sh --undo` gives HOME back to Amazon's launcher.
 | Background | black, graphite, midnight, image, adaptive, adaptive tint |
 | Image dim, wallpaper rotation | for image backgrounds |
 | Child lock | off, on: hides Options and Settings and turns off Hold OK and ☰ Menu on tiles, so the home screen only opens apps and inputs (see below) |
+| App tile style | original (default), Afterglow: uppercase names inside the tile, a brand-color fade into black, a grayscale installed app icon in the corner, and a thin focus border |
 
 Below them: Next wallpaper, which apps and inputs appear on the home screen, a
 reset for order, names and hidden tiles, and **Open Amazon's home screen**. Apps
 without a TV banner, like the Appstore, start hidden; tick them to add them.
+
+**Afterglow** changes app tiles only, in both rows and grid layouts. Select it in
+Options or set `tile_style=afterglow` in `home.conf`. The name remains visible inside
+each tile regardless of the App names setting; input tiles are unchanged.
+Known apps use locally defined colors; other apps use the selected accent.
+Corner icons come from installed apps, so no brand-logo files or downloads are
+needed. Missing icons still leave the name visible. Switching back to Original
+restores the normal banners and App names behavior. Background and layout remain
+separate choices.
 
 | Grid layout | Adaptive background | Adaptive tint |
 |---|---|---|

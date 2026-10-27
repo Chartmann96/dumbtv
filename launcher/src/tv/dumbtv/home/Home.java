@@ -216,7 +216,7 @@ public final class Home extends Activity {
         int fit = getResources().getDisplayMetrics().widthPixels / (cardSize()[0] + dp(18)) + 1;
         for (Item it : Catalog.visible(cfg, Catalog.APPS, apps.all, recentFor(Catalog.APPS))) {
             if (fit-- <= 0) break;
-            Catalog.art(getPackageManager(), it);
+            Catalog.art(getPackageManager(), it, "afterglow".equals(cfg.get(Config.TILE_STYLE)));
             it.artRequested = true;
         }
     }
@@ -735,7 +735,8 @@ public final class Home extends Activity {
             }
             if (it.id.equals(keep)) restore = index;
             index++;
-            if (Catalog.APPS.equals(row.kind) && !it.artRequested) loadArt(it);
+            if (Catalog.APPS.equals(row.kind) && (!it.artRequested
+                    || "afterglow".equals(cfg.get(Config.TILE_STYLE)) && it.icon == null)) loadArt(it);
         }
         row.setVisible(!shown.isEmpty());
         if (shown.isEmpty()) {
@@ -754,8 +755,9 @@ public final class Home extends Activity {
 
     private void loadArt(Item it) {
         it.artRequested = true;
+        boolean cornerIcon = "afterglow".equals(cfg.get(Config.TILE_STYLE));
         io.execute(() -> {
-            Catalog.art(getPackageManager(), it);
+            Catalog.art(getPackageManager(), it, cornerIcon);
             ui.post(() -> {
                 ViewGroup tiles = apps.tiles();
                 for (int i = 0; i < tiles.getChildCount(); i++) tiles.getChildAt(i).invalidate();

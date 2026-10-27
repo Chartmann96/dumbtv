@@ -103,7 +103,9 @@ final class Config {
             new String[] {"off", "on"},
             new String[] {"Off", "On"});
 
-    static final Choice[] CHOICES = {ACCENT, TILES, LAYOUT, ORDER, LABELS, CLOCK, MEMORY, INPUTS, SWITCH, BACKGROUND, DIM, ROTATE, LOCK};
+    static final Choice TILE_STYLE = new Choice("tile_style", "App tile style", "original",
+            new String[] {"original", "afterglow"}, new String[] {"Original", "Afterglow"});
+    static final Choice[] CHOICES = {ACCENT, TILES, LAYOUT, ORDER, LABELS, CLOCK, MEMORY, INPUTS, SWITCH, BACKGROUND, DIM, ROTATE, LOCK, TILE_STYLE};
 
     /** Folder of wallpapers, next to home.conf, that Background › Image file rotates through. */
     static final String WALLPAPERS = "wallpapers";
