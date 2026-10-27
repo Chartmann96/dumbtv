@@ -252,7 +252,10 @@ to repeat.
 
 ### An Amazon update undid the cleanup
 
-Updates re-enable packages and reset settings. The updater itself is protected, so
+Updates re-enable packages and reset settings. `verify.sh` names both: a `warn
+packages` line lists cleanup packages that are on again, and a `warn settings` line
+lists ad-tracking and usage settings back at Amazon's values. `./scripts/debloat.sh -y`
+puts them back. The updater itself is protected, so
 the DNS filter is what keeps updates away: it blocks `softwareupdates.amazon.com`
 and the download servers. If you turned the filter off or factory-reset the TV,
 run `./scripts/all.sh` again.

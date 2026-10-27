@@ -138,6 +138,36 @@ fi
 
 off=$(dev 'pm list packages -d' | tr -d '\r')
 printf '%-10s %-38s %s\n' packages "" "$(printf '%s\n' "$off" | grep -c '^package:') disabled"
+
+# A Fire OS update can switch a disabled package back on or put an ad-tracking
+# setting back to Amazon's default, and nothing on the TV says so.
+installed=$(dev 'pm list packages' | tr -d '\r')
+back=""
+for p in $(cleanup_list); do
+  protected_by_policy "$p" && continue
+  keep_pkg "$p" && continue
+  # Amazon refuses to disable these; lockdown.sh starves them instead.
+  list_of "$(fos protected.txt)" | grep -qxF "$p" && continue
+  grep -qxF "package:$p" <<<"$installed" || continue
+  grep -qxF "package:$p" <<<"$off" && continue
+  back="$back $p"
+done
+if [[ -n $back ]]; then
+  printf '%-10s %-38s %s\n' warn packages "enabled again:$back; run debloat.sh"
+fi
+
+current=$(dev 'settings list secure; settings list global' | tr -d '\r')
+reset=""; checked=0
+while read -r ns key value; do
+  checked=$((checked+1))
+  now=$(printf '%s\n' "$current" | awk -v k="$key" 'index($0, k "=") == 1 { print substr($0, length(k) + 2); exit }')
+  [[ $now == "$value" ]] || reset="$reset $key=${now:-unset}"
+done < <(list_of "$(fos settings.txt)" | sed 's/ = / /')
+if [[ -n $reset ]]; then
+  printf '%-10s %-38s %s\n' warn settings "back to Amazon's values:$reset; run debloat.sh"
+else
+  printf '%-10s %-38s %s\n' ok settings "$checked privacy settings as set"
+fi
 dream=$(dream_package)
 if [[ -n $dream ]] && grep -qx "package:$dream" <<<"$off"; then
   printf '%-10s %-38s %s\n' warn screensaver "$dream is disabled, so the TV sleeps at the timeout; run debloat.sh"
