@@ -163,6 +163,12 @@ fi
 # the app's data and unpacks the files as the app.
 restore_into_app() {
   local data=$WORK/appdata/PersonalDNSFilter
+  # Some Fire OS 8 builds (8.1.8.5, RS8185.3885N on a ginza set) ship without the backup
+  # service: `bu` logs "Can't obtain Backup Manager binder" and adb restore returns at once.
+  if dev "service check backup" 2>/dev/null | grep -q 'not found'; then
+    note "this firmware has no backup service, so adb restore cannot carry the config in"
+    return 1
+  fi
   mkdir -p "$data"
   cp "$CONF_OUT" "$data/dnsfilter.conf"
   cp "$LIST" "$data/FILTERHOSTS.TXT"
