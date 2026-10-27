@@ -41,8 +41,10 @@ Every step is undone by `./scripts/restore.sh`.
    they say yes, `youtube.sh` disables the stock app; it only deletes it with
    `--remove`, and only when they asked for it gone in those words. Their Google
    account and subscriptions are never touched.
-8. **Never `am force-stop dnsfilter.android`.** It leaves the filter running but
-   filtering nothing until the TV reboots.
+8. **Never `am force-stop dnsfilter.android` yourself.** It leaves the filter running
+   but filtering nothing until the TV reboots. `dnsfilter.sh` stops it once on
+   purpose, before it replaces the app's files, and reboots the TV itself; let it.
+   If that run is cut short, reboot the TV or run `dnsfilter.sh` again.
 9. **Never disable `com.amazon.vizzini`.** It keeps running anyway, and on some
    TVs it covers the screen with "Unable to Detect Your Remote".
 10. **One TV at a time.** If `adb devices` lists several, set `ADB_SERIAL`.
