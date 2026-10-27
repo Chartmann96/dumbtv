@@ -5,7 +5,7 @@ settings, and every `FAIL` line names what is wrong. Find that symptom below.
 
 To put the TV back the way it was: `./scripts/restore.sh`.
 
-**Contents:** [Home screen](#home-screen) · [DNS filter](#dns-filter) ·
+**Contents:** [Home screen](#home-screen) · [Inputs](#inputs) · [DNS filter](#dns-filter) ·
 [Packages and apps](#packages-and-apps) · [Updates](#updates) ·
 [Fire OS 6](#fire-os-6) · [Fire OS 8](#fire-os-8) · [Testing like a remote](#testing-like-a-remote)
 
@@ -71,6 +71,38 @@ releases the picture about 0.4 s after HOME.
 Amazon's Live TV app claims every input and then shows its settings or a channel
 scan. Set Options › Open inputs with › **Automatic** (the default from launcher
 1.2), which uses the launcher's own input screen when that happens.
+
+## Inputs
+
+### The TV sleeps while something is playing on HDMI
+
+The picture goes black after a few minutes and the TV behaves as if nothing is
+playing: it goes to sleep and saves energy. Fire OS counts a passthrough input
+as no activity. Nothing plays through a media session, and the window that
+shows the picture does not ask to stay awake, so the screen-off timer runs
+(300000 ms is five minutes) and the TV puts itself to sleep.
+
+dumbtv home 1.3 and later keep the panel awake while an input shows a picture,
+and let it sleep again once the input reports that there is no signal. Check
+which release is on the TV:
+
+```sh
+adb shell dumpsys package tv.dumbtv.home | grep versionName
+```
+
+An older launcher says `1.2` or lower: run `./scripts/launcher.sh -y` to
+install the current release. `verify.sh` reports the same thing.
+
+If the input reports "No signal" while something is plainly playing, the input
+service has not locked the port. On a MediaTek television that is what
+`HdmiInputService: checkVideoAvaliable: no signal` in the log means; the
+picture comes when the source wakes up.
+
+### The screen goes off after five minutes on any input
+
+That is the screen-off timeout, a TV setting: Settings > Preferences > Screen
+Saver > Screen Off. Over adb it is `settings get system screen_off_timeout`,
+in milliseconds.
 
 ## DNS filter
 

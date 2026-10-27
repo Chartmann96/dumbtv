@@ -169,6 +169,7 @@ path. Use the table below; do not disable more packages.
 | Amazon's home shows for ~5 s before dumbtv home | `./scripts/launcher.sh -y` (an update reset the alarm setting) |
 | Nothing is blocked, but the filter is running | reboot the TV |
 | "Unable to Detect Your Remote" over everything | `adb shell pm enable --user 0 com.amazon.vizzini`, then reboot |
+| The TV sleeps while something plays on HDMI | `./scripts/launcher.sh -y` (dumbtv home 1.3 and later keep the panel awake) |
 | An app stopped working | find the host it needs and remove it from `data/blocklists/extra-hosts.txt`, then `./scripts/dnsfilter.sh -y` |
 | They want an app back | `adb shell pm enable --user 0 <package>`, or the Appstore if it was uninstalled |
 | Start over | `./scripts/restore.sh -y` |
