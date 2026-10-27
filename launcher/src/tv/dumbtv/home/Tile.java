@@ -32,7 +32,7 @@ final class Tile extends View {
     private final TextPaint inner = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final TextPaint under = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private boolean moving;
-    private final AfterglowTile viking;
+    private final AfterglowTile afterglow;
 
     Tile(Context c, Item item, String kind, CharSequence title, int cardW, int cardH,
             String labels, int accent) {
@@ -43,13 +43,13 @@ final class Tile extends View {
         this.cardW = cardW;
         this.cardH = cardH;
         boolean app = Catalog.APPS.equals(kind);
-        viking = app && "afterglow".equals(Config.get(c).get(Config.TILE_STYLE))
+        afterglow = app && "afterglow".equals(Config.get(c).get(Config.TILE_STYLE))
                 ? new AfterglowTile(c, item.id, title, accent) : null;
-        labelH = app && viking == null ? Ui.dp(c, 26) : 0;
+        labelH = app && afterglow == null ? Ui.dp(c, 26) : 0;
         labelAlways = "always".equals(labels);
         labelOnFocus = "focus".equals(labels);
         radius = Ui.dp(c, 10);
-        stroke = Ui.dp(c, viking == null ? 2.5f : 1f);
+        stroke = Ui.dp(c, afterglow == null ? 2.5f : 1f);
 
         fill.setColor(app ? Ui.SURFACE : 0xFF17181B);
         ring.setStyle(Paint.Style.STROKE);
@@ -86,7 +86,7 @@ final class Tile extends View {
         card.set(0, 0, cardW, cardH);
         clip.reset();
         clip.addRoundRect(card, radius, radius, Path.Direction.CW);
-        if (viking != null) viking.resize(cardW, cardH);
+        if (afterglow != null) afterglow.resize(cardW, cardH);
         setPivotX(cardW / 2f);
         setPivotY(cardH / 2f);
     }
@@ -110,8 +110,8 @@ final class Tile extends View {
         canvas.save();
         canvas.clipPath(clip);
         canvas.drawRect(card, fill);
-        if (viking != null) {
-            viking.draw(canvas, icon, cardW, cardH, radius);
+        if (afterglow != null) {
+            afterglow.draw(canvas, icon, cardW, cardH);
         } else if (banner != null) {
             banner.setBounds(0, 0, cardW, cardH);
             banner.draw(canvas);
@@ -127,7 +127,7 @@ final class Tile extends View {
         if (moving) canvas.drawColor(0x99000000);
         canvas.restore();
 
-        if (viking != null) viking.edge(canvas, cardW, cardH, radius);
+        if (afterglow != null) afterglow.edge(canvas, cardW, cardH, radius);
 
         if (item.state == TvInputManager.INPUT_STATE_CONNECTED) {
             float r = Ui.dp(getContext(), 3.5f);
