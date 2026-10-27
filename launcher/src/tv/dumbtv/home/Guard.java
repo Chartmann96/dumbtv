@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -34,6 +35,8 @@ import android.view.accessibility.AccessibilityEvent;
  * through system_server by an alarm ("Background activity start ... callingUidHasAnyVisibleWindow:
  * false"). The cover is such a window, so the launch waits until the cover has reached the
  * window manager: {@link #launchWhenCovered} fires it from the cover's first draw pass.
+ * Android 14 counts the cover only once the window manager has shown its surface, a frame or
+ * more after that draw, so there the alarm is set {@link #SHOWN_DELAY_MS} later (issue #57).
  *
  * Waking from standby resumes whatever was on screen without a new window event. If the last
  * window was Amazon's home screen, ours is brought up at once. Amazon's other launcher screens,
@@ -45,6 +48,7 @@ public final class Guard extends AccessibilityService {
     private static final long COVER_MAX_MS = 1500;
     private static final long REPEAT_MS = 1000;
     private static final long LAUNCH_FALLBACK_MS = 150;
+    private static final long SHOWN_DELAY_MS = Build.VERSION.SDK_INT >= 34 ? 300 : 0;
 
     private static volatile boolean paused;
     private static Guard running;
@@ -69,8 +73,13 @@ public final class Guard extends AccessibilityService {
     }
 
     static void home(Context c) {
+        home(c, 0);
+    }
+
+    private static void home(Context c, long delayMs) {
         AlarmManager alarms = (AlarmManager) c.getSystemService(Context.ALARM_SERVICE);
-        alarms.setExact(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime(), launch(c));
+        alarms.setExact(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + delayMs,
+                launch(c));
     }
 
     /** Drops a queued launch, so it cannot pull the user back after they opened an app. */
@@ -178,7 +187,7 @@ public final class Guard extends AccessibilityService {
             public boolean onPreDraw() {
                 cover.getViewTreeObserver().removeOnPreDrawListener(this);
                 handler.removeCallbacks(launch);
-                home(Guard.this);
+                home(Guard.this, SHOWN_DELAY_MS);
                 return true;
             }
         });
